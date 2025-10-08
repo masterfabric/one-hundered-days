@@ -27,8 +27,10 @@ Your daily progress and project work must be documented according to the followi
 │   └── expo\_roadmap.md      // Detailed 100-day flow for Expo (React Native)
 ├── devops/
 │   └── devops\_roadmap.md    // Detailed 100-day flow for DevOps
-└── nestjs/
-    └── nestjs\_roadmap.md    // Detailed 100-day flow for NestJS
+├── nestjs/
+│   └── nestjs\_roadmap.md    // Detailed 100-day flow for NestJS
+└── git/
+    └── git\_roadmap.md       // Detailed 100-day flow for Git
 
 ````
 
