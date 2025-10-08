@@ -19,7 +19,7 @@ Your daily progress and project work must be documented according to the followi
 
 .
 ├── README.md                 // Project overview and guidelines (This file)
-├── approved\_intern.md        // Intern Profile and Goal Template (MANDATORY initial step)
+├── interns/approved\_intern+template.md        // Intern Profile and Goal Template (MANDATORY initial step)
 └── days/
 ├── flutter/
 │   └── flutter\_roadmap.md   // Detailed 100-day flow for Flutter
