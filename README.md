@@ -10,7 +10,7 @@ MasterFabric Information Technology Inc. builds exceptional software solutionsâ€
 
 ## Tracks (quick view)
 
-Compact view with links + minimal badges (details are inside each roadmap).
+Quick overview of the available tracks. Open a roadmap for the full curriculum and day-by-day plan.
 
 | Track | Duration | Focus | Roadmap |
 |---|---:|---|---|
@@ -27,14 +27,6 @@ Compact view with links + minimal badges (details are inside each roadmap).
 - **Start here**
   - **Formal Internship onboarding**: [`/interns/approved_intern+template.md`](./interns/approved_intern+template.md)
   - **Open Trainee program (Academy)**: [`/trainee/README.md`](./trainee/README.md)
-- **Roadmaps (tracks)**
-  - **Flutter (100 days)**: [`/days/flutter/flutter_roadmap.md`](./days/flutter/flutter_roadmap.md)
-  - **Expo / React Native (100 days)**: [`/days/expo/expo_roadmap.md`](./days/expo/expo_roadmap.md)
-  - **DevOps (100 days)**: [`/days/devops/devops_roadmap.md`](./days/devops/devops_roadmap.md)
-  - **NestJS (100 days)**: [`/days/nestjs/nestjs_roadmap.md`](./days/nestjs/nestjs_roadmap.md)
-  - **Next.js (100 days)**: [`/days/nextjs/nextjs_roadmap.md`](./days/nextjs/nextjs_roadmap.md)
-  - **Git (16 days)**: [`/days/git/git_roadmap.md`](./days/git/git_roadmap.md)
-  - **AI Agents (100 days)**: [`/days/ai-agents/ai-agents_roadmap.md`](./days/ai-agents/ai-agents_roadmap.md)
 - **Templates & rules**
   - PR/commit guide: [`/interns/pr_and_commit_guide.md`](./interns/pr_and_commit_guide.md)
   - Intern checklist: [`/interns/intern_checklist.md`](./interns/intern_checklist.md)
