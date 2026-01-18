@@ -1,6 +1,26 @@
-### 🚀 DevOps Developer Roadmap: Day 1 to Day 10 (Foundational Skills)
+# 🚀 DevOps Developer Roadmap: Day 1 to Day 100
+
+This roadmap provides a comprehensive 100-day plan to master DevOps from foundation to professional level.
 
 | Day | Focus Area | Content Details | Goal (From Foundation to Professional) |
 | :---: | :--- | :--- | :--- |
 | **1-5** | **Linux Fundamentals & Shell Scripting** | Basic commands (ls, cd, cp, mv, rm, mkdir, rmdir, cat, less, grep), permissions, users, environment variables, basic shell scripting (variables, loops, conditionals). | Solidify command-line proficiency and automate basic tasks. |
 | **6-10** | **Version Control with Git** | Git basics (init, add, commit, status, log), branching (branch, checkout, merge, rebase), remote repositories (clone, push, pull, fetch), conflict resolution. | Master collaborative code management and version control. |
+| **11-15** | **Containerization with Docker** | Docker introduction, images and containers, Dockerfiles, Docker Compose, container networking and volumes. | Package applications with dependencies for consistent deployment across environments. |
+| **16-20** | **CI/CD - Continuous Integration & Deployment** | Introduction to CI/CD, GitHub Actions basics, building and testing in CI, continuous deployment basics, end-to-end CI/CD pipelines. | Automate building, testing, and deployment processes. |
+| **21-25** | **Cloud Computing - AWS Fundamentals** | Introduction to AWS, EC2 basics, S3 basics, IAM and security basics, deploying applications to AWS. | Understand cloud infrastructure and deploy applications to the cloud. |
+| **26-30** | **Infrastructure as Code with Terraform** | Introduction to Terraform, Terraform basics, variables and outputs, Terraform modules, infrastructure automation projects. | Manage infrastructure as code for reproducible and version-controlled infrastructure. |
+| **31-35** | **Container Orchestration with Kubernetes** | Introduction to Kubernetes, Kubernetes basics, Deployments and Services, ConfigMaps and Secrets, production Kubernetes deployments. | Orchestrate containers at scale with Kubernetes. |
+| **36-40** | **Monitoring & Logging** | Introduction to observability, Prometheus basics, Grafana dashboards, centralized logging, monitoring and observability projects. | Monitor applications and infrastructure for reliability and performance. |
+| **41-45** | **Advanced Cloud Services** | AWS RDS, AWS VPC and networking, Load Balancers, Auto Scaling, advanced cloud architecture projects. | Build scalable and resilient cloud architectures. |
+| **46-50** | **Configuration Management with Ansible** | Introduction to Ansible, Ansible playbooks, Ansible roles and best practices, Ansible with cloud resources, infrastructure automation projects. | Automate server configuration and application deployment. |
+| **51-55** | **DevOps Security** | Introduction to DevOps security, secrets management, vulnerability scanning and security testing, infrastructure security and hardening, security implementation projects. | Implement security best practices in DevOps workflows. |
+| **56-60** | **Advanced CI/CD** | Pipeline optimization, multi-stage pipelines, GitOps introduction, implementing GitOps, advanced CI/CD projects. | Build sophisticated CI/CD pipelines with GitOps practices. |
+| **61-65** | **Serverless Computing** | Introduction to serverless computing, AWS Lambda basics, API Gateway and serverless APIs, Serverless Framework and deployment, serverless application projects. | Build and deploy serverless applications. |
+| **66-70** | **Advanced Topics** | Disaster recovery and backup, cost optimization, performance optimization, advanced Terraform, DevOps best practices and review. | Master advanced DevOps concepts for production environments. |
+| **71-75** | **Advanced Kubernetes** | Ingress and networking, Helm package manager, StatefulSets and persistent storage, Operators and Custom Resources, advanced Kubernetes projects. | Deploy and manage complex applications in Kubernetes. |
+| **76-80** | **Multi-Cloud Strategy** | Introduction to multi-cloud strategy, Azure fundamentals, Google Cloud Platform fundamentals, Terraform multi-cloud, multi-cloud deployment projects. | Work with multiple cloud providers for flexibility and redundancy. |
+| **81-85** | **Advanced Monitoring** | Distributed tracing, Application Performance Monitoring (APM), advanced Prometheus and Grafana, log aggregation and analysis, comprehensive monitoring projects. | Implement advanced observability practices. |
+| **86-90** | **Advanced Automation** | Python for DevOps, advanced Ansible, advanced shell scripting, infrastructure testing, automation excellence projects. | Build sophisticated automation solutions with scripting and testing. |
+| **91-95** | **Advanced Security** | Security automation, Zero Trust Architecture, compliance automation, security incident response, advanced security projects. | Implement enterprise-grade security practices. |
+| **96-100** | **Final Projects & Career Development** | Capstone project planning, capstone project implementation (parts 1-2), DevOps certifications and career, final review and journey completion. | Synthesize all learning into production-ready projects and prepare for DevOps career. |

@@ -36,15 +36,15 @@ Your daily progress and project work must be documented according to the followi
     ├── expo/
     │   └── expo_roadmap.md      // Detailed 100-day flow for Expo (React Native)
     ├── devops/
-    │   └── devops_roadmap.md    // Detailed 10-day flow for DevOps
+    │   └── devops_roadmap.md    // Detailed 100-day flow for DevOps
     ├── nestjs/
-    │   └── nestjs_roadmap.md    // Detailed 20-day flow for NestJS
+    │   └── nestjs_roadmap.md    // Detailed 100-day flow for NestJS
     ├── nextjs/
-    │   └── nextjs_roadmap.md    // Detailed 20-day flow for Next.js
+    │   └── nextjs_roadmap.md    // Detailed 100-day flow for Next.js
     ├── git/
     │   └── git_roadmap.md       // Detailed 16-day flow for Git
     └── ai-agents/
-        └── ai-agents_roadmap.md // Detailed 20-day flow for AI Agents
+        └── ai-agents_roadmap.md // Detailed 100-day flow for AI Agents
 
 ````
 
