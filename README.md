@@ -65,7 +65,7 @@ This program is guided by our core values.
 
 ## Diagrams (Mermaid)
 
-### Repository structure (high level)
+### Repository map
 
 ```mermaid
 flowchart TB
@@ -92,7 +92,7 @@ flowchart TB
   D --> A[ai-agents/ai-agents_roadmap.md]
 ```
 
-### Onboarding flow (choose your path)
+### Onboarding decision flow
 
 ```mermaid
 flowchart LR
