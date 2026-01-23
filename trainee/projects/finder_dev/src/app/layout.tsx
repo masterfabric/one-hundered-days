@@ -3,6 +3,7 @@ import { JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { loadSiteData } from '@/utils/content-loader';
 import { SplashProvider } from '@/components/layout/SplashProvider';
+import { Toaster } from 'sonner';
 
 const jetbrainsMono = JetBrains_Mono({ 
   subsets: ['latin'],
@@ -35,11 +36,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className="dark">
       <body className={jetbrainsMono.variable}>
         <SplashProvider>
           {children}
         </SplashProvider>
+        <Toaster position="top-right" richColors />
       </body>
     </html>
   );

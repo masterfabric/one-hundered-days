@@ -1,0 +1,238 @@
+{
+  "page": {
+    "title": "Profile",
+    "description": "View and manage your profile information"
+  },
+  "sections": {
+    "personalInfo": {
+      "title": "Personal Information",
+      "fields": {
+        "username": "Username",
+        "fullName": "Full Name",
+        "role": "Role",
+        "location": "Location",
+        "bio": "Bio",
+        "avatar": "Avatar"
+      }
+    },
+    "navigation": {
+      "profile": "Profile",
+      "notifications": "Notifications",
+      "privacySecurity": "Privacy & Security",
+      "appearance": "Appearance"
+    },
+    "skills": {
+      "title": "Skills & Technologies",
+      "empty": "No skills added yet",
+      "addSkill": "Add Skill",
+      "removeSkill": "Remove"
+    },
+    "socialLinks": {
+      "title": "Social Links",
+      "fields": {
+        "website": "Website",
+        "github": "GitHub",
+        "linkedin": "LinkedIn",
+        "twitter": "Twitter"
+      }
+    },
+    "projects": {
+      "title": "Projects",
+      "empty": "No projects yet",
+      "viewAll": "View All Projects"
+    }
+  },
+  "actions": {
+    "edit": "Edit Profile",
+    "save": "Save Changes",
+    "cancel": "Cancel",
+    "delete": "Delete Account"
+  },
+  "mockData": {
+    "profiles": [
+      {
+        "id": "550e8400-e29b-41d4-a716-446655440000",
+        "username": "alexturner",
+        "fullName": "Alex Turner",
+        "role": "Full-Stack Developer",
+        "location": "San Francisco, CA",
+        "avatarUrl": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=faces",
+        "bio": "Full-stack developer with 5+ years of experience building scalable web applications. Passionate about React, Node.js, and cloud infrastructure. Always open to collaborating on innovative projects.",
+        "socialLinks": {
+          "website": "https://alexchen.dev",
+          "github": "https://github.com/alexchen",
+          "linkedin": "https://linkedin.com/in/alexchen",
+          "twitter": "https://twitter.com/alexchen"
+        },
+        "skills": [
+          {
+            "id": 1,
+            "name": "React",
+            "category": "Frontend"
+          },
+          {
+            "id": 2,
+            "name": "TypeScript",
+            "category": "Frontend"
+          },
+          {
+            "id": 3,
+            "name": "Node.js",
+            "category": "Backend"
+          },
+          {
+            "id": 4,
+            "name": "PostgreSQL",
+            "category": "Backend"
+          },
+          {
+            "id": 5,
+            "name": "AWS",
+            "category": "Tool"
+          }
+        ]
+      },
+      {
+        "id": "550e8400-e29b-41d4-a716-446655440001",
+        "username": "sarahkim",
+        "fullName": "Sarah Kim",
+        "avatarUrl": "https://api.dicebear.com/7.x/avataaars/svg?seed=sarahkim",
+        "bio": "UI/UX Designer focused on creating intuitive and beautiful user experiences. Specialized in design systems and user research. Love working with developers to bring designs to life.",
+        "socialLinks": {
+          "website": "https://sarahkim.design",
+          "github": "https://github.com/sarahkim",
+          "linkedin": "https://linkedin.com/in/sarahkim",
+          "twitter": "https://twitter.com/sarahkimdesign"
+        },
+        "skills": [
+          {
+            "id": 6,
+            "name": "Figma",
+            "category": "Design"
+          },
+          {
+            "id": 7,
+            "name": "Adobe XD",
+            "category": "Design"
+          },
+          {
+            "id": 8,
+            "name": "Sketch",
+            "category": "Design"
+          },
+          {
+            "id": 9,
+            "name": "React",
+            "category": "Frontend"
+          }
+        ]
+      },
+      {
+        "id": "550e8400-e29b-41d4-a716-446655440002",
+        "username": "mikejones",
+        "fullName": "Mike Jones",
+        "avatarUrl": "https://api.dicebear.com/7.x/avataaars/svg?seed=mikejones",
+        "bio": "Product Manager with a technical background. Expert in agile methodologies and cross-functional team leadership. Looking for exciting projects to help shape.",
+        "socialLinks": {
+          "website": "https://mikejones.pm",
+          "linkedin": "https://linkedin.com/in/mikejones",
+          "twitter": "https://twitter.com/mikejonespm"
+        },
+        "skills": [
+          {
+            "id": 10,
+            "name": "Jira",
+            "category": "Tool"
+          },
+          {
+            "id": 11,
+            "name": "Notion",
+            "category": "Tool"
+          },
+          {
+            "id": 12,
+            "name": "Python",
+            "category": "Backend"
+          }
+        ]
+      },
+      {
+        "id": "550e8400-e29b-41d4-a716-446655440003",
+        "username": "priyapatel",
+        "fullName": "Priya Patel",
+        "avatarUrl": "https://api.dicebear.com/7.x/avataaars/svg?seed=priyapatel",
+        "bio": "Recent bootcamp graduate specializing in frontend development. Eager to contribute to open-source projects and learn from experienced developers. Strong in JavaScript, React, and CSS.",
+        "socialLinks": {
+          "github": "https://github.com/priyapatel",
+          "linkedin": "https://linkedin.com/in/priyapatel"
+        },
+        "skills": [
+          {
+            "id": 13,
+            "name": "JavaScript",
+            "category": "Frontend"
+          },
+          {
+            "id": 14,
+            "name": "React",
+            "category": "Frontend"
+          },
+          {
+            "id": 15,
+            "name": "CSS",
+            "category": "Frontend"
+          },
+          {
+            "id": 16,
+            "name": "Tailwind CSS",
+            "category": "Frontend"
+          }
+        ]
+      },
+      {
+        "id": "550e8400-e29b-41d4-a716-446655440004",
+        "username": "davidlee",
+        "fullName": "David Lee",
+        "avatarUrl": "https://api.dicebear.com/7.x/avataaars/svg?seed=davidlee",
+        "bio": "Backend engineer passionate about distributed systems and microservices. Experience with Go, Python, and Kubernetes. Open to mentoring and collaborative projects.",
+        "socialLinks": {
+          "website": "https://davidlee.tech",
+          "github": "https://github.com/davidlee",
+          "linkedin": "https://linkedin.com/in/davidlee"
+        },
+        "skills": [
+          {
+            "id": 17,
+            "name": "Go",
+            "category": "Backend"
+          },
+          {
+            "id": 18,
+            "name": "Python",
+            "category": "Backend"
+          },
+          {
+            "id": 19,
+            "name": "Kubernetes",
+            "category": "Tool"
+          },
+          {
+            "id": 20,
+            "name": "Docker",
+            "category": "Tool"
+          },
+          {
+            "id": 21,
+            "name": "PostgreSQL",
+            "category": "Backend"
+          },
+          {
+            "id": 22,
+            "name": "Redis",
+            "category": "Backend"
+          }
+        ]
+      }
+    ]
+  }
+}
