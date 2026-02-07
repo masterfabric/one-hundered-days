@@ -4,10 +4,12 @@ import type { SplashData } from './types';
 import type { SiteData } from './types';
 import type { HomeData } from './types';
 import type { ProfileData } from './types';
+import type { SentryData } from './types';
 import splashData from '../data/splash.json';
 import siteData from '../config/site-data.json';
 import homeData from '../data/home.json';
 import profileData from '../data/profile.json';
+import sentryData from '../data/sentry.json';
 import technologiesData from '../data/technologies.json';
 
 export function loadSplashData(): SplashData {
@@ -24,6 +26,10 @@ export function loadHomeData(): HomeData {
 
 export function loadProfileData(): ProfileData {
   return profileData as ProfileData;
+}
+
+export function loadSentryData(): SentryData {
+  return sentryData as SentryData;
 }
 
 export function loadTechnologies() {

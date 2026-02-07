@@ -1,0 +1,41 @@
+{
+  "page": {
+    "title": "Sentry Integration",
+    "description": "Test Sentry error tracking for your Next.js app",
+    "icon": "sentry-logo"
+  },
+  "hero": {
+    "title": "sentry-example-page",
+    "description": "Click the button below, and view the sample error on the Sentry Issues Page. For more details about setting up Sentry, read our docs."
+  },
+  "button": {
+    "label": "Throw Sample Error",
+    "text": "Throw Sample Error"
+  },
+  "messages": {
+    "loading": "Initializing Sentry...",
+    "success": "Error sent to Sentry.",
+    "connectivity": {
+      "title": "Connectivity Error",
+      "description": "It looks like network requests to Sentry are being blocked, which will prevent errors from being captured. Try disabling your ad-blocker to complete the test."
+    },
+    "error": {
+      "title": "SentryExampleFrontendError",
+      "description": "This error is raised on the frontend of the example page."
+    }
+  },
+  "links": {
+    "issues": {
+      "text": "Issues Page",
+      "url": "https://devfinder.sentry.io/issues/?project=4510770573738064"
+    },
+    "documentation": {
+      "text": "read our docs",
+      "url": "https://docs.sentry.io/platforms/javascript/guides/nextjs/"
+    }
+  },
+  "meta": {
+    "title": "sentry-example-page",
+    "description": "Test Sentry for your Next.js app!"
+  }
+}

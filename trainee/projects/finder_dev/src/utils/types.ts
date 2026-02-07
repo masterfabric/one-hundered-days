@@ -37,6 +37,48 @@ export interface HomeData {
   };
 }
 
+export interface SentryData {
+  page: {
+    title: string;
+    description: string;
+    icon: string;
+  };
+  hero: {
+    title: string;
+    description: string;
+  };
+  button: {
+    label: string;
+    text: string;
+  };
+  messages: {
+    loading: string;
+    success: string;
+    connectivity: {
+      title: string;
+      description: string;
+    };
+    error: {
+      title: string;
+      description: string;
+    };
+  };
+  links: {
+    issues: {
+      text: string;
+      url: string;
+    };
+    documentation: {
+      text: string;
+      url: string;
+    };
+  };
+  meta: {
+    title: string;
+    description: string;
+  };
+}
+
 export interface ProfileData {
   page: {
     title: string;
