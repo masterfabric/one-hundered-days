@@ -4,6 +4,7 @@ import './globals.css';
 import { loadSiteData } from '@/utils/content-loader';
 import { SplashProvider } from '@/components/layout/SplashProvider';
 import { Toaster } from '@/components/ui/toast-core';
+import { ThemeProvider } from '@/context/ThemeContext';
 
 const jetbrainsMono = JetBrains_Mono({ 
   subsets: ['latin'],
@@ -38,10 +39,12 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className="dark">
       <body className={jetbrainsMono.variable}>
+        <ThemeProvider>
         <SplashProvider>
           {children}
         </SplashProvider>
         <Toaster position="top-right" richColors />
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -4,7 +4,13 @@ import { useState, useMemo, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -32,15 +38,28 @@ import {
 } from "@/components/ui/select";
 import { loadProfileData, loadTechnologies } from "@/utils/content-loader";
 import { cn } from "@/lib/utils";
-import type { UserProfile, UserSkill, TechnologyCategory } from "@/types/profile";
+import type {
+  UserProfile,
+  UserSkill,
+  TechnologyCategory,
+} from "@/types/profile";
 import { ToastHelper } from "@/helpers/toastHelper";
-import { Loader2, Camera, Upload, X, Image as ImageIcon, Plus } from "lucide-react";
+import {
+  Loader2,
+  Camera,
+  Upload,
+  X,
+  Image as ImageIcon,
+  Plus,
+} from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 // Mock user data - in real app, this would come from auth/supabase
 const mockUser = {
   name: "Alex Turner",
   username: "alexturner",
-  avatarUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=faces",
+  avatarUrl:
+    "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=faces",
   role: "Full-Stack Dev",
 };
 
@@ -48,7 +67,7 @@ const mockUser = {
 function getInitialProfile(): UserProfile {
   const profileData = loadProfileData();
   const mockProfile = profileData.mockData?.profiles?.[0];
-  if (mockProfile && typeof mockProfile === 'object') {
+  if (mockProfile && typeof mockProfile === "object") {
     return {
       id: (mockProfile as any).id || "",
       username: (mockProfile as any).username || "",
@@ -68,7 +87,8 @@ function getInitialProfile(): UserProfile {
     role: "Full-Stack Developer",
     location: "San Francisco, CA",
     bio: "Full-stack developer with 5+ years of experience building scalable web applications. Passionate about React, Node.js, and cloud infrastructure.",
-    avatarUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=faces",
+    avatarUrl:
+      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=faces",
     socialLinks: {
       website: "https://alexturner.dev",
       github: "https://github.com/alexturner",
@@ -86,15 +106,28 @@ function getInitialProfile(): UserProfile {
 
 // Location data - Country -> Cities
 const locationData: Record<string, string[]> = {
-  "Turkey": ["Istanbul", "Ankara", "Izmir", "Bursa", "Antalya", "Adana"],
-  "United States": ["New York", "San Francisco", "Los Angeles", "Chicago", "Boston", "Seattle"],
-  "United Kingdom": ["London", "Manchester", "Birmingham", "Edinburgh", "Bristol"],
-  "Germany": ["Berlin", "Munich", "Hamburg", "Frankfurt", "Cologne"],
-  "France": ["Paris", "Lyon", "Marseille", "Toulouse", "Nice"],
-  "Japan": ["Tokyo", "Osaka", "Kyoto", "Yokohama", "Sapporo"],
-  "Canada": ["Toronto", "Vancouver", "Montreal", "Calgary", "Ottawa"],
-  "Australia": ["Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide"],
-  "Remote": [],
+  Turkey: ["Istanbul", "Ankara", "Izmir", "Bursa", "Antalya", "Adana"],
+  "United States": [
+    "New York",
+    "San Francisco",
+    "Los Angeles",
+    "Chicago",
+    "Boston",
+    "Seattle",
+  ],
+  "United Kingdom": [
+    "London",
+    "Manchester",
+    "Birmingham",
+    "Edinburgh",
+    "Bristol",
+  ],
+  Germany: ["Berlin", "Munich", "Hamburg", "Frankfurt", "Cologne"],
+  France: ["Paris", "Lyon", "Marseille", "Toulouse", "Nice"],
+  Japan: ["Tokyo", "Osaka", "Kyoto", "Yokohama", "Sapporo"],
+  Canada: ["Toronto", "Vancouver", "Montreal", "Calgary", "Ottawa"],
+  Australia: ["Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide"],
+  Remote: [],
 };
 
 // Parse location from profile
@@ -116,18 +149,22 @@ export default function ProfilePage() {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-  
+
   // Location state
   const initialLocation = parseLocation(profile.location);
-  const [selectedCountry, setSelectedCountry] = useState<string>(initialLocation.country);
-  const [selectedCity, setSelectedCity] = useState<string>(initialLocation.city);
-  
+  const [selectedCountry, setSelectedCountry] = useState<string>(
+    initialLocation.country,
+  );
+  const [selectedCity, setSelectedCity] = useState<string>(
+    initialLocation.city,
+  );
+
   // Get cities for selected country
   const availableCities = useMemo(() => {
     if (!selectedCountry || selectedCountry === "Remote") return [];
     return locationData[selectedCountry] || [];
   }, [selectedCountry]);
-  
+
   // Update location when country or city changes
   const updateLocation = (country: string, city: string) => {
     if (country === "Remote") {
@@ -140,7 +177,7 @@ export default function ProfilePage() {
       setProfile((prev) => ({ ...prev, location: "" }));
     }
   };
-  
+
   const handleCountryChange = (country: string) => {
     setSelectedCountry(country);
     setSelectedCity("");
@@ -150,7 +187,7 @@ export default function ProfilePage() {
       updateLocation(country, "");
     }
   };
-  
+
   const handleCityChange = (city: string) => {
     setSelectedCity(city);
     if (selectedCountry) {
@@ -174,11 +211,14 @@ export default function ProfilePage() {
       href: "/profile",
     },
     {
-      name: profileContent.sections.navigation?.notifications || "Notifications",
+      name:
+        profileContent.sections.navigation?.notifications || "Notifications",
       href: "/profile/notifications",
     },
     {
-      name: profileContent.sections.navigation?.privacySecurity || "Privacy & Security",
+      name:
+        profileContent.sections.navigation?.privacySecurity ||
+        "Privacy & Security",
       href: "/profile/privacy-security",
     },
     {
@@ -190,14 +230,16 @@ export default function ProfilePage() {
   // Filter technologies based on search and already selected
   const availableTechnologies = useMemo(() => {
     const selectedSkillIds = new Set(profile.skills?.map((s) => s.id) || []);
-    let filtered = technologies.filter((tech) => !selectedSkillIds.has(tech.id));
-    
+    let filtered = technologies.filter(
+      (tech) => !selectedSkillIds.has(tech.id),
+    );
+
     if (searchQuery) {
       filtered = filtered.filter((tech) =>
-        tech.name.toLowerCase().includes(searchQuery.toLowerCase())
+        tech.name.toLowerCase().includes(searchQuery.toLowerCase()),
       );
     }
-    
+
     return filtered;
   }, [technologies, profile.skills, searchQuery]);
 
@@ -258,51 +300,50 @@ export default function ProfilePage() {
       reader.readAsDataURL(file);
     }
   };
-const handleSave = async () => {
+  const handleSave = async () => {
     // Validate required fields
-  const trimmedUsername = profile.username?.trim() || "";
-  const trimmedFullName = profile.fullName?.trim() || "";
-  const trimmedRole = profile.role?.trim() || "";
-  
-  // Trigger bottom-center alert if mandatory fields are missing
-  if (!trimmedUsername || !trimmedFullName || !trimmedRole) {
-    ToastHelper.validation(
-      "Incomplete Profile", 
-      "Please ensure all required fields (*) are populated."
-    );
-    return;
-  }
-  
-  setIsSaving(true);
+    const trimmedUsername = profile.username?.trim() || "";
+    const trimmedFullName = profile.fullName?.trim() || "";
+    const trimmedRole = profile.role?.trim() || "";
 
-  try {
-    /**
-     * ToastHelper.promise automatically transitions from loading to success/error.
-     * @todo Replace the mock delay with: supabase.from('profiles').upsert(profile)
-     */
-    await ToastHelper.promise(
-      new Promise((resolve) => setTimeout(resolve, 1500)), // Simulated API call
-      {
-        loading: "Saving changes...",
-        success: "Success! Your profile is now live.",
-        error: "Failed to update profile. Please try again.",
-      }
-    );
+    // Trigger bottom-center alert if mandatory fields are missing
+    if (!trimmedUsername || !trimmedFullName || !trimmedRole) {
+      ToastHelper.validation(
+        "Incomplete Profile",
+        "Please ensure all required fields (*) are populated.",
+      );
+      return;
+    }
 
-    console.log("Supabase sync initiated for:", profile.username);
-    
-  } catch (error) {
-    // Technical logging for internal debugging
-    console.error("Profile Synchronization Error:", error);
-  } finally {
-    // Reset local UI state regardless of the promise outcome
-    setIsSaving(false);
-  }
-};
+    setIsSaving(true);
+
+    try {
+      /**
+       * ToastHelper.promise automatically transitions from loading to success/error.
+       * @todo Replace the mock delay with: supabase.from('profiles').upsert(profile)
+       */
+      await ToastHelper.promise(
+        new Promise((resolve) => setTimeout(resolve, 1500)), // Simulated API call
+        {
+          loading: "Saving changes...",
+          success: "Success! Your profile is now live.",
+          error: "Failed to update profile. Please try again.",
+        },
+      );
+
+      console.log("Supabase sync initiated for:", profile.username);
+    } catch (error) {
+      // Technical logging for internal debugging
+      console.error("Profile Synchronization Error:", error);
+    } finally {
+      // Reset local UI state regardless of the promise outcome
+      setIsSaving(false);
+    }
+  };
   return (
     <DashboardLayout user={mockUser}>
       <div className="h-full gradient-bg">
-          {/* Centered Compact Settings Panel */}
+        {/* Centered Compact Settings Panel */}
         <div className="flex justify-center items-start min-h-full py-8 px-4">
           <div className="flex gap-6 max-w-4xl w-full">
             {/* Left Sub-navigation Card */}
@@ -310,7 +351,8 @@ const handleSave = async () => {
               <Card className="gradient-card border-[hsl(var(--border))] rounded-xl shadow-lg sticky top-8">
                 <nav className="p-4 space-y-1">
                   {subNav.map((item) => {
-                    const isActive = pathname === item.href || 
+                    const isActive =
+                      pathname === item.href ||
                       (item.href === "/profile" && pathname === "/profile");
                     return (
                       <Link
@@ -320,7 +362,7 @@ const handleSave = async () => {
                           "flex items-center px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
                           isActive
                             ? "bg-[hsl(var(--primary))] text-white shadow-md"
-                            : "text-[hsl(var(--muted-foreground))] hover:text-white hover:bg-[hsl(var(--muted))]"
+                            : "text-[hsl(var(--muted-foreground))] hover:text-white hover:bg-[hsl(var(--muted))]",
                         )}
                       >
                         {item.name}
@@ -334,13 +376,18 @@ const handleSave = async () => {
             {/* Main Content Panel */}
             <main className="flex-1 max-w-3xl">
               {/* Header */}
-              <div className="mb-6">
-                <h1 className="text-2xl font-bold text-[hsl(var(--foreground))] mb-1">
-                  {profileContent.page.title}
-                </h1>
-                <p className="text-[hsl(var(--muted-foreground))] text-sm">
-                  {profileContent.page.description}
-                </p>
+              <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="mb-6">
+                  <h1 className="text-2xl font-bold text-[hsl(var(--foreground))] mb-1">
+                    {profileContent.page.title}
+                  </h1>
+                  <p className="text-[hsl(var(--muted-foreground))] text-sm">
+                    {profileContent.page.description}
+                  </p>
+                </div>
+                <div className="flex shrink-0">
+                  <ThemeToggle />
+                </div>
               </div>
 
               {/* Photo Management Card */}
@@ -356,7 +403,10 @@ const handleSave = async () => {
                     <div className="relative group flex-shrink-0">
                       <Avatar className="h-32 w-32 border-2">
                         {profile.avatarUrl && (
-                          <AvatarImage src={profile.avatarUrl} alt={profile.fullName} />
+                          <AvatarImage
+                            src={profile.avatarUrl}
+                            alt={profile.fullName}
+                          />
                         )}
                         <AvatarFallback className="text-2xl">
                           {profile.fullName.charAt(0).toUpperCase()}
@@ -381,7 +431,9 @@ const handleSave = async () => {
                         <Button
                           type="button"
                           variant="outline"
-                          onClick={() => document.getElementById('avatar-upload')?.click()}
+                          onClick={() =>
+                            document.getElementById("avatar-upload")?.click()
+                          }
                           className="hover:bg-primary/10 hover:text-primary hover:border-primary/50 transition-colors"
                         >
                           <Camera className="h-4 w-4 mr-2" />
@@ -391,7 +443,9 @@ const handleSave = async () => {
                           <Button
                             type="button"
                             variant="outline"
-                            onClick={() => setProfile({ ...profile, avatarUrl: undefined })}
+                            onClick={() =>
+                              setProfile({ ...profile, avatarUrl: undefined })
+                            }
                             className="hover:bg-destructive/10 hover:text-destructive hover:border-destructive/50 transition-colors"
                           >
                             <X className="h-4 w-4 mr-2" />
@@ -411,7 +465,9 @@ const handleSave = async () => {
               {/* Personal Information Card */}
               <Card className="mb-4">
                 <CardHeader>
-                  <CardTitle>{profileContent.sections.personalInfo.title}</CardTitle>
+                  <CardTitle>
+                    {profileContent.sections.personalInfo.title}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
@@ -419,11 +475,14 @@ const handleSave = async () => {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium mb-2">
-                          <span className="text-red-500">*</span> {profileContent.sections.personalInfo.fields.fullName}
+                          <span className="text-red-500">*</span>{" "}
+                          {profileContent.sections.personalInfo.fields.fullName}
                         </label>
                         <Input
                           value={profile.fullName}
-                          onChange={(e) => handleInputChange("fullName", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange("fullName", e.target.value)
+                          }
                           placeholder="Enter your full name"
                           required
                         />
@@ -434,11 +493,14 @@ const handleSave = async () => {
 
                       <div>
                         <label className="block text-sm font-medium mb-2">
-                          <span className="text-red-500">*</span> {profileContent.sections.personalInfo.fields.username}
+                          <span className="text-red-500">*</span>{" "}
+                          {profileContent.sections.personalInfo.fields.username}
                         </label>
                         <Input
                           value={profile.username}
-                          onChange={(e) => handleInputChange("username", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange("username", e.target.value)
+                          }
                           placeholder="Enter your username"
                           required
                         />
@@ -451,29 +513,52 @@ const handleSave = async () => {
                     {/* Role field */}
                     <div>
                       <label className="block text-sm font-medium mb-2">
-                        <span className="text-red-500">*</span> {profileContent.sections.personalInfo.fields.role}
+                        <span className="text-red-500">*</span>{" "}
+                        {profileContent.sections.personalInfo.fields.role}
                       </label>
                       <Select
                         value={profile.role || ""}
-                        onValueChange={(value) => handleInputChange("role", value)}
+                        onValueChange={(value) =>
+                          handleInputChange("role", value)
+                        }
                         required
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select your role" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Senior Developer">Senior Developer</SelectItem>
-                          <SelectItem value="Junior Developer">Junior Developer</SelectItem>
+                          <SelectItem value="Senior Developer">
+                            Senior Developer
+                          </SelectItem>
+                          <SelectItem value="Junior Developer">
+                            Junior Developer
+                          </SelectItem>
                           <SelectItem value="Trainee">Trainee</SelectItem>
                           <SelectItem value="Team Lead">Team Lead</SelectItem>
-                          <SelectItem value="Full-Stack Developer">Full-Stack Developer</SelectItem>
-                          <SelectItem value="Frontend Developer">Frontend Developer</SelectItem>
-                          <SelectItem value="Backend Developer">Backend Developer</SelectItem>
-                          <SelectItem value="UI/UX Designer">UI/UX Designer</SelectItem>
-                          <SelectItem value="Product Manager">Product Manager</SelectItem>
-                          <SelectItem value="DevOps Engineer">DevOps Engineer</SelectItem>
-                          <SelectItem value="Mobile Developer">Mobile Developer</SelectItem>
-                          <SelectItem value="Data Scientist">Data Scientist</SelectItem>
+                          <SelectItem value="Full-Stack Developer">
+                            Full-Stack Developer
+                          </SelectItem>
+                          <SelectItem value="Frontend Developer">
+                            Frontend Developer
+                          </SelectItem>
+                          <SelectItem value="Backend Developer">
+                            Backend Developer
+                          </SelectItem>
+                          <SelectItem value="UI/UX Designer">
+                            UI/UX Designer
+                          </SelectItem>
+                          <SelectItem value="Product Manager">
+                            Product Manager
+                          </SelectItem>
+                          <SelectItem value="DevOps Engineer">
+                            DevOps Engineer
+                          </SelectItem>
+                          <SelectItem value="Mobile Developer">
+                            Mobile Developer
+                          </SelectItem>
+                          <SelectItem value="Data Scientist">
+                            Data Scientist
+                          </SelectItem>
                           <SelectItem value="Other">Other</SelectItem>
                         </SelectContent>
                       </Select>
@@ -512,10 +597,18 @@ const handleSave = async () => {
                         <Select
                           value={selectedCity}
                           onValueChange={handleCityChange}
-                          disabled={!selectedCountry || selectedCountry === "Remote"}
+                          disabled={
+                            !selectedCountry || selectedCountry === "Remote"
+                          }
                         >
                           <SelectTrigger>
-                            <SelectValue placeholder={selectedCountry === "Remote" ? "Remote" : "Select city"} />
+                            <SelectValue
+                              placeholder={
+                                selectedCountry === "Remote"
+                                  ? "Remote"
+                                  : "Select city"
+                              }
+                            />
                           </SelectTrigger>
                           <SelectContent>
                             {availableCities.map((city) => (
@@ -543,7 +636,9 @@ const handleSave = async () => {
                       </div>
                       <Textarea
                         value={profile.bio || ""}
-                        onChange={(e) => handleInputChange("bio", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("bio", e.target.value)
+                        }
                         placeholder="Tell us about yourself..."
                         maxLength={500}
                         className="h-[120px] resize-none"
@@ -564,7 +659,6 @@ const handleSave = async () => {
                   <CardTitle>{profileContent.sections.skills.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  
                   {/* Existing Skills - Blue rounded badges */}
                   {profile.skills && profile.skills.length > 0 ? (
                     <div className="flex flex-wrap gap-2 mb-5">
@@ -601,7 +695,10 @@ const handleSave = async () => {
                         {profileContent.sections.skills.addSkill}
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-[400px] p-0 rounded-xl shadow-xl" align="start">
+                    <PopoverContent
+                      className="w-[400px] p-0 rounded-xl shadow-xl"
+                      align="start"
+                    >
                       <Command className="bg-[hsl(var(--popover))] rounded-xl">
                         <CommandInput
                           placeholder="Search technologies..."
@@ -611,24 +708,26 @@ const handleSave = async () => {
                         />
                         <CommandList>
                           <CommandEmpty>No technology found.</CommandEmpty>
-                          {Object.entries(technologiesByCategory).map(([category, techs]) => (
-                            <CommandGroup
-                              key={category}
-                              heading={category}
-                              className="text-[hsl(var(--muted-foreground))]"
-                            >
-                              {techs.map((tech) => (
-                                <CommandItem
-                                  key={tech.id}
-                                  value={tech.name}
-                                  onSelect={() => handleAddSkill(tech.id)}
-                                  className="text-[hsl(var(--foreground))] cursor-pointer hover:bg-[hsl(var(--primary))] hover:text-white rounded-lg mx-1"
-                                >
-                                  {tech.name}
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          ))}
+                          {Object.entries(technologiesByCategory).map(
+                            ([category, techs]) => (
+                              <CommandGroup
+                                key={category}
+                                heading={category}
+                                className="text-[hsl(var(--muted-foreground))]"
+                              >
+                                {techs.map((tech) => (
+                                  <CommandItem
+                                    key={tech.id}
+                                    value={tech.name}
+                                    onSelect={() => handleAddSkill(tech.id)}
+                                    className="text-[hsl(var(--foreground))] cursor-pointer hover:bg-[hsl(var(--primary))] hover:text-white rounded-lg mx-1"
+                                  >
+                                    {tech.name}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            ),
+                          )}
                         </CommandList>
                       </Command>
                     </PopoverContent>
