@@ -14,6 +14,7 @@ class HomeViewModel extends BaseViewModelHydratedCubit<HomeState> {
   HomeViewModel() : super(HomeInitialState());
 
   final Map<String, dynamic> _arguments = {};
+  void Function(String route)? _goRoute;
 
   void setArguments(Map<String, dynamic> args) {
     _arguments
@@ -21,19 +22,23 @@ class HomeViewModel extends BaseViewModelHydratedCubit<HomeState> {
       ..addAll(args);
   }
 
+  void setGoRoute(void Function(String route)? fn) => _goRoute = fn;
+
   Map<String, dynamic> get arguments => Map.unmodifiable(_arguments);
 
   void initial() {
     emit(HomeLoadedState());
   }
 
+  void navigate(String route) => _goRoute?.call(route);
+
   @override
   HomeState? fromJson(Map<String, dynamic> json) {
-    return null; // State reconstructed on load
+    return null;
   }
 
   @override
   Map<String, dynamic>? toJson(HomeState state) {
-    return null; // No persistence needed for minimal home state
+    return null;
   }
 }
