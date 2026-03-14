@@ -1,10 +1,8 @@
 "use client";
 
 import * as Sentry from "@sentry/nextjs";
-import Head from "next/head";
 import { useEffect, useState } from "react";
-import { loadSentryData } from "@/utils/content-loader";
-import type { SentryData } from "@/utils/types";
+import sentryDataJson from "@/data/sentry.json";
 
 class SentryExampleFrontendError extends Error {
   constructor(message: string | undefined) {
@@ -13,20 +11,14 @@ class SentryExampleFrontendError extends Error {
   }
 }
 
+type SentryData = typeof sentryDataJson;
+
 export default function Page() {
-  const [sentryData, setSentryData] = useState<SentryData | null>(null);
+  const [sentryData] = useState<SentryData>(sentryDataJson);
   const [hasSentError, setHasSentError] = useState(false);
   const [isConnected, setIsConnected] = useState(true);
 
   useEffect(() => {
-    // Load sentry data
-    try {
-      const data = loadSentryData();
-      setSentryData(data);
-    } catch (error) {
-      console.error("Failed to load sentry data:", error);
-    }
-
     Sentry.logger.info("Sentry example page loaded");
     
     async function checkConnectivity() {
@@ -61,11 +53,6 @@ export default function Page() {
 
   return (
     <div>
-      <Head>
-        <title>{sentryData.meta.title}</title>
-        <meta name="description" content={sentryData.meta.description} />
-      </Head>
-
       <main className="sentry-container">
         <div className="sentry-spacer" />
         
