@@ -8,19 +8,8 @@ import 'package:tiny_plates/gen/strings.g.dart';
 
 // ─── Category label helpers ───────────────────────────────────────────────────
 
-bool _isTurkish(BuildContext context) =>
-    Localizations.localeOf(context).languageCode == 'tr';
-
 String _categoryLabel(BuildContext context, IngredientCategory category) {
   final t = context.t;
-  if (_isTurkish(context)) {
-    return switch (category) {
-      IngredientCategory.vegetables => t.pantryCategoryVegetables,
-      IngredientCategory.fruits => t.pantryCategoryFruits,
-      IngredientCategory.grains => t.pantryCategoryGrains,
-      IngredientCategory.proteins => t.pantryCategoryProteins,
-    };
-  }
   return switch (category) {
     IngredientCategory.vegetables => t.pantryCategoryVegetables,
     IngredientCategory.fruits => t.pantryCategoryFruits,
@@ -45,7 +34,7 @@ class PantryContent extends StatefulWidget {
     required this.viewModel,
   });
 
-  final PantryLoadedState state;
+  final PantryState state;
   final PantryViewModel viewModel;
 
   @override
@@ -95,65 +84,66 @@ class _PantryContentState extends State<PantryContent> {
             ),
           ),
 
-          // ── Search bar ──────────────────────────────────────────────
-          Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: context.spacing24,
-              vertical: context.spacing12,
-            ),
-            child: TextField(
-              controller: _searchController,
-              onChanged: vm.search,
-              decoration: InputDecoration(
-                hintText: t.pantrySearchHint,
-                hintStyle: TextStyle(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
-                  fontSize: 14,
-                ),
-                prefixIcon: Icon(
-                  Icons.search,
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
-                  size: 20,
-                ),
-                suffixIcon: state.searchQuery.isNotEmpty
-                    ? GestureDetector(
-                        onTap: () {
-                          _searchController.clear();
-                          vm.search('');
-                        },
-                        child: Icon(
-                          Icons.close,
-                          color: theme.colorScheme.onSurface
-                              .withValues(alpha: 0.4),
-                          size: 20,
-                        ),
-                      )
-                    : null,
-                contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 12),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                  borderSide: BorderSide(
-                    color: theme.colorScheme.outline.withValues(alpha: 0.4),
+          // ── Search bar (config-driven) ───────────────────────────────
+          if (state.searchEnabled)
+            Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: context.spacing24,
+                vertical: context.spacing12,
+              ),
+              child: TextField(
+                controller: _searchController,
+                onChanged: vm.search,
+                decoration: InputDecoration(
+                  hintText: t.pantrySearchHint,
+                  hintStyle: TextStyle(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                    fontSize: 14,
                   ),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                  borderSide: BorderSide(
-                    color: theme.colorScheme.outline.withValues(alpha: 0.3),
+                  prefixIcon: Icon(
+                    Icons.search,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                    size: 20,
                   ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                  borderSide: BorderSide(
-                    color: theme.colorScheme.primary,
+                  suffixIcon: state.searchQuery.isNotEmpty
+                      ? GestureDetector(
+                          onTap: () {
+                            _searchController.clear();
+                            vm.search('');
+                          },
+                          child: Icon(
+                            Icons.close,
+                            color: theme.colorScheme.onSurface
+                                .withValues(alpha: 0.4),
+                            size: 20,
+                          ),
+                        )
+                      : null,
+                  contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 12),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                    borderSide: BorderSide(
+                      color: theme.colorScheme.outline.withValues(alpha: 0.4),
+                    ),
                   ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                    borderSide: BorderSide(
+                      color: theme.colorScheme.outline.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                    borderSide: BorderSide(
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+                  filled: true,
+                  fillColor: theme.colorScheme.surface,
                 ),
-                filled: true,
-                fillColor: theme.colorScheme.surface,
               ),
             ),
-          ),
 
           // ── Content ─────────────────────────────────────────────────
           Expanded(
@@ -194,8 +184,9 @@ class _PantryContentState extends State<PantryContent> {
                       ),
                     ),
 
-                  // Pantry empty state (only when no items and no search)
-                  if (state.pantryItems.isEmpty &&
+                  // Empty banner (config-driven)
+                  if (state.showEmptyBanner &&
+                      state.pantryItems.isEmpty &&
                       state.searchQuery.isEmpty) ...[
                     OsmeaComponents.sizedBox(height: context.spacing16),
                     _PantryEmptyBanner(t: t, theme: theme),

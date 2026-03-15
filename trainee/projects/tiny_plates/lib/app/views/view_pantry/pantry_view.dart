@@ -31,7 +31,7 @@ class PantryView
     PantryViewModel viewModel,
     PantryState state,
   ) {
-    if (state is PantryInitialState) {
+    if (state.status == PantryStatus.initial) {
       return OsmeaComponents.center(
         child: OsmeaComponents.loading(
           type: LoadingType.rotatingDots,
@@ -41,16 +41,6 @@ class PantryView
       );
     }
 
-    if (state is PantryLoadedState) {
-      return PantryContent(state: state, viewModel: viewModel);
-    }
-
-    return OsmeaComponents.center(
-      child: OsmeaComponents.loading(
-        type: LoadingType.rotatingDots,
-        size: 36,
-        color: Theme.of(context).colorScheme.primary,
-      ),
-    );
+    return PantryContent(state: state, viewModel: viewModel);
   }
 }
