@@ -191,6 +191,10 @@
       "lumpy": "dots"
     }
   },
+  "pantry_configuration": {
+    "search_enabled": true,
+    "show_empty_banner": true
+  },
   "features": {
     "calorieTracking": true
   },

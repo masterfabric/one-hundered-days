@@ -4,6 +4,8 @@ enum ChewingLevel { none, minimal, soft, moderate, full }
 
 enum TextureToleranceLevel { smooth, mashed, lumpy, chopped, solid }
 
+enum FamilyRiskClassification { low, moderate, high }
+
 class ChildProfile {
   const ChildProfile({
     required this.ageMonths,
@@ -17,6 +19,8 @@ class ChildProfile {
     required this.dailyCalorieTarget,
     required this.dailyProteinTarget,
     required this.foodRestrictions,
+    this.familyAllergyHistory = '',
+    this.familyRiskClassification = FamilyRiskClassification.low,
   });
 
   final int ageMonths;
@@ -30,6 +34,8 @@ class ChildProfile {
   final int dailyCalorieTarget;
   final int dailyProteinTarget;
   final List<FoodRestriction> foodRestrictions;
+  final String familyAllergyHistory;
+  final FamilyRiskClassification familyRiskClassification;
 
   factory ChildProfile.empty() => const ChildProfile(
         ageMonths: 6,
@@ -57,6 +63,8 @@ class ChildProfile {
     int? dailyCalorieTarget,
     int? dailyProteinTarget,
     List<FoodRestriction>? foodRestrictions,
+    String? familyAllergyHistory,
+    FamilyRiskClassification? familyRiskClassification,
   }) =>
       ChildProfile(
         ageMonths: ageMonths ?? this.ageMonths,
@@ -71,6 +79,10 @@ class ChildProfile {
         dailyCalorieTarget: dailyCalorieTarget ?? this.dailyCalorieTarget,
         dailyProteinTarget: dailyProteinTarget ?? this.dailyProteinTarget,
         foodRestrictions: foodRestrictions ?? this.foodRestrictions,
+        familyAllergyHistory:
+            familyAllergyHistory ?? this.familyAllergyHistory,
+        familyRiskClassification:
+            familyRiskClassification ?? this.familyRiskClassification,
       );
 
   Map<String, dynamic> toJson() => {
@@ -86,6 +98,8 @@ class ChildProfile {
         'dailyProteinTarget': dailyProteinTarget,
         'foodRestrictions':
             foodRestrictions.map((r) => r.toJson()).toList(),
+        'familyAllergyHistory': familyAllergyHistory,
+        'familyRiskClassification': familyRiskClassification.name,
       };
 
   factory ChildProfile.fromJson(Map<String, dynamic> json) => ChildProfile(
@@ -111,5 +125,11 @@ class ChildProfile {
             .map((e) =>
                 FoodRestriction.fromJson(e as Map<String, dynamic>))
             .toList(),
+        familyAllergyHistory:
+            (json['familyAllergyHistory'] as String?) ?? '',
+        familyRiskClassification: FamilyRiskClassification.values.firstWhere(
+          (e) => e.name == json['familyRiskClassification'],
+          orElse: () => FamilyRiskClassification.low,
+        ),
       );
 }

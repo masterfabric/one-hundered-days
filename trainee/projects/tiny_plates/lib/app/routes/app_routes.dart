@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:masterfabric_core/masterfabric_core.dart';
+import 'package:tiny_plates/app/views/view_allergy_tracker/allergy_tracker_view.dart';
 import 'package:tiny_plates/app/views/view_dashboard/dashboard_shell.dart';
 import 'package:tiny_plates/app/views/view_diary/diary_view.dart';
 import 'package:tiny_plates/app/views/view_home/home_view.dart';
 import 'package:tiny_plates/app/views/view_onboarding/onboarding_view.dart';
+import 'package:tiny_plates/app/views/view_pantry/pantry_view.dart';
 import 'package:tiny_plates/app/views/view_settings/settings_view.dart';
 import 'package:tiny_plates/app/views/view_user_profile/user_profile_view.dart';
 
@@ -71,6 +73,29 @@ final GoRouter appRouter = GoRouter(
       builder: (BuildContext context, GoRouterState state) {
         return UserProfileView(
           goRoute: (String path) => context.go(path),
+          arguments: const {'view': 'userProfile'},
+        );
+      },
+    ),
+
+    /// Pantry manager – outside dashboard shell (full screen).
+    GoRoute(
+      path: '/pantry',
+      builder: (BuildContext context, GoRouterState state) {
+        return PantryView(
+          goRoute: (String path) => context.go(path),
+          arguments: const {'view': 'pantry'},
+        );
+      },
+    ),
+
+    /// Allergy tracker – outside dashboard shell (full screen).
+    GoRoute(
+      path: '/allergy-tracker',
+      builder: (BuildContext context, GoRouterState state) {
+        return AllergyTrackerView(
+          goRoute: (String path) => context.go(path),
+          arguments: const {'view': 'allergyTracker'},
         );
       },
     ),
