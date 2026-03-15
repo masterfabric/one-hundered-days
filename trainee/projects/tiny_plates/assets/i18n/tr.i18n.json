@@ -110,5 +110,24 @@
   "allergyTrackerSeverityMildDesc": "Hafif: Lokal döküntü, burun akıntısı, hafif kaşıntı",
   "allergyTrackerSeverityModerateDesc": "Orta: Kurdeşen, kusma, karın ağrısı",
   "allergyTrackerSeveritySevereDesc": "Şiddetli: Yaygın kurdeşen, nefes alma güçlüğü, şişme",
-  "allergyTrackerSeverityAnaphylaxisDesc": "Anafilaksi: Hayati tehlike. Hemen 112'yi arayın!"
+  "allergyTrackerSeverityAnaphylaxisDesc": "Anafilaksi: Hayati tehlike. Hemen 112'yi arayın!",
+
+  "homeFeatureRecipe": "Tarif Motoru",
+  "homeFeatureRecipeDesc": "Kişiselleştirilmiş bebek tarifleri oluşturun",
+
+  "recipeEngineTitle": "Tarif Motoru",
+  "recipeEngineMode1Label": "Dolapta Ne Var?",
+  "recipeEngineMode2Label": "Bugün Ne Yemeli?",
+  "recipeEngineMode1Desc": "Kilerdeki malzemelerle tarif oluşturun.",
+  "recipeEngineMode2Desc": "Günlük besin açıklarını dolduracak öneriler alın.",
+  "recipeEngineSelectIngredients": "Kilerden malzeme seçin",
+  "recipeEngineNoPantryItems": "Kileriniz boş. Önce malzeme ekleyin.",
+  "recipeEngineNutrientGaps": "Günlük besin durumu",
+  "recipeEngineGenerate": "Tarif Oluştur",
+  "recipeEngineGenerating": "Oluşturuluyor…",
+  "recipeEngineResults": "Önerilen Tarifler",
+  "recipeEngineNoRecipes": "Seçili malzemeler için güvenli tarif bulunamadı.",
+  "recipeEnginePrepTime": "dk",
+  "recipeEngineCalories": "kcal",
+  "recipeEngineSensoryTips": "Duyusal İpuçları"
 }

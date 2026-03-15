@@ -139,6 +139,24 @@ class TranslationsTr with BaseTranslations<AppLocale, Translations> implements T
 	@override String get allergyTrackerSeverityModerateDesc => 'Orta: Kurdeşen, kusma, karın ağrısı';
 	@override String get allergyTrackerSeveritySevereDesc => 'Şiddetli: Yaygın kurdeşen, nefes alma güçlüğü, şişme';
 	@override String get allergyTrackerSeverityAnaphylaxisDesc => 'Anafilaksi: Hayati tehlike. Hemen 112\'yi arayın!';
+
+	@override String get homeFeatureRecipe => 'Tarif Motoru';
+	@override String get homeFeatureRecipeDesc => 'Kişiselleştirilmiş bebek tarifleri oluşturun';
+	@override String get recipeEngineTitle => 'Tarif Motoru';
+	@override String get recipeEngineMode1Label => 'Dolapta Ne Var?';
+	@override String get recipeEngineMode2Label => 'Bugün Ne Yemeli?';
+	@override String get recipeEngineMode1Desc => 'Kilerdeki malzemelerle tarif oluşturun.';
+	@override String get recipeEngineMode2Desc => 'Günlük besin açıklarını dolduracak öneriler alın.';
+	@override String get recipeEngineSelectIngredients => 'Kilerden malzeme seçin';
+	@override String get recipeEngineNoPantryItems => 'Kileriniz boş. Önce malzeme ekleyin.';
+	@override String get recipeEngineNutrientGaps => 'Günlük besin durumu';
+	@override String get recipeEngineGenerate => 'Tarif Oluştur';
+	@override String get recipeEngineGenerating => 'Oluşturuluyor…';
+	@override String get recipeEngineResults => 'Önerilen Tarifler';
+	@override String get recipeEngineNoRecipes => 'Seçili malzemeler için güvenli tarif bulunamadı.';
+	@override String get recipeEnginePrepTime => 'dk';
+	@override String get recipeEngineCalories => 'kcal';
+	@override String get recipeEngineSensoryTips => 'Duyusal İpuçları';
 }
 
 /// The flat map containing all translations for locale <tr>.
@@ -251,6 +269,23 @@ extension on TranslationsTr {
 			'allergyTrackerSeverityModerateDesc' => 'Orta: Kurdeşen, kusma, karın ağrısı',
 			'allergyTrackerSeveritySevereDesc' => 'Şiddetli: Yaygın kurdeşen, nefes alma güçlüğü, şişme',
 			'allergyTrackerSeverityAnaphylaxisDesc' => 'Anafilaksi: Hayati tehlike. Hemen 112\'yi arayın!',
+			'homeFeatureRecipe' => 'Tarif Motoru',
+			'homeFeatureRecipeDesc' => 'Kişiselleştirilmiş bebek tarifleri oluşturun',
+			'recipeEngineTitle' => 'Tarif Motoru',
+			'recipeEngineMode1Label' => 'Dolapta Ne Var?',
+			'recipeEngineMode2Label' => 'Bugün Ne Yemeli?',
+			'recipeEngineMode1Desc' => 'Kilerdeki malzemelerle tarif oluşturun.',
+			'recipeEngineMode2Desc' => 'Günlük besin açıklarını dolduracak öneriler alın.',
+			'recipeEngineSelectIngredients' => 'Kilerden malzeme seçin',
+			'recipeEngineNoPantryItems' => 'Kileriniz boş. Önce malzeme ekleyin.',
+			'recipeEngineNutrientGaps' => 'Günlük besin durumu',
+			'recipeEngineGenerate' => 'Tarif Oluştur',
+			'recipeEngineGenerating' => 'Oluşturuluyor…',
+			'recipeEngineResults' => 'Önerilen Tarifler',
+			'recipeEngineNoRecipes' => 'Seçili malzemeler için güvenli tarif bulunamadı.',
+			'recipeEnginePrepTime' => 'dk',
+			'recipeEngineCalories' => 'kcal',
+			'recipeEngineSensoryTips' => 'Duyusal İpuçları',
 			_ => null,
 		};
 	}
