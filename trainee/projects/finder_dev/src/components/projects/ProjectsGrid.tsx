@@ -64,6 +64,7 @@ type StatusFilter =
 interface ProjectsGridProps {
   searchQuery?: string;
   statusFilter?: StatusFilter;
+  statusTouched?: boolean;
   selectedTech?: string[];
   selectedRole?: string[];
   onClearFilters?: () => void;
@@ -72,6 +73,7 @@ interface ProjectsGridProps {
 export function ProjectsGrid({ 
   searchQuery = "", 
   statusFilter = "all",
+  statusTouched = false,
   selectedTech = [],
   selectedRole = [],
   onClearFilters
@@ -129,7 +131,7 @@ export function ProjectsGrid({
         }
 
         // Add status filter
-        if (statusFilter && statusFilter !== "all") {
+        if (statusTouched && statusFilter) {
           query.status = statusFilter;
         }
 
@@ -188,7 +190,7 @@ export function ProjectsGrid({
       cancelled = true;
       clearTimeout(timeoutId);
     };
-  }, [searchQuery, statusFilter, selectedTech, selectedRole]);
+  }, [searchQuery, statusFilter, statusTouched, selectedTech, selectedRole]);
 
   console.log("ProjectsGrid render:", {
     loading,
@@ -245,7 +247,7 @@ export function ProjectsGrid({
                     Handpicked from the latest projects
                   </p>
                   <motion.div
-                    className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
+                    className="grid gap-6 max-w-6xl mx-auto justify-center [grid-template-columns:repeat(auto-fit,minmax(280px,360px))]"
                     variants={containerVariants}
                     initial="hidden"
                     animate="visible"
@@ -310,7 +312,7 @@ export function ProjectsGrid({
 
       {!loading && !error && projects.length > 0 && (
         <motion.div
-          className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
+          className="grid gap-6 max-w-6xl mx-auto justify-center [grid-template-columns:repeat(auto-fit,minmax(280px,360px))]"
           variants={containerVariants}
           initial="hidden"
           animate="visible"

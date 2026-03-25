@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { User, Settings, Bell, LayoutGrid, Users, PlusSquare, LayoutDashboard } from "lucide-react";
+import { User, Settings, Bell, LayoutGrid, PlusSquare, LayoutDashboard } from "lucide-react";
 
 interface SidebarItem {
   id: string;
@@ -25,12 +25,6 @@ const sidebarItems: SidebarItem[] = [
     label: "Projects",
     icon: <LayoutGrid className="h-5 w-5" />,
     href: "/projects",
-  },
-  {
-    id: "developers",
-    label: "Developers",
-    icon: <Users className="h-5 w-5" />,
-    href: "/developers",
   },
   {
     id: "create-project",

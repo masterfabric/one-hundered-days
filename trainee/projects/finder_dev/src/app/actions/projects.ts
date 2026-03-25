@@ -15,16 +15,8 @@ import {
 import { revalidatePath } from "next/cache";
 
 // Define types for the raw Supabase response to fix "never" type errors
-interface ProjectTechnology {
-  technology: {
-    id: number;
-    name: string;
-    category: string;
-  };
-}
-
 interface ProjectMember {
-  id: string;
+  project_id: string;
   status: string;
 }
 
@@ -43,14 +35,16 @@ interface FeaturedProjectResponse {
   github_url: string | null;
   live_url: string | null;
   created_at: string;
-  owner: ProjectOwner;
-  project_technologies: ProjectTechnology[];
-  project_members: ProjectMember[];
+  owner_id: string;
+  tech_stack?: unknown;
 }
 
 function normalizeTextArray(value: unknown): string[] {
   if (Array.isArray(value)) {
-    return value.map((item) => String(item).trim()).filter(Boolean);
+    return value
+      .flatMap((item) => normalizeTextArray(item))
+      .map((item) => item.trim())
+      .filter(Boolean);
   }
   if (typeof value !== "string") return [];
 
@@ -81,8 +75,32 @@ function normalizeTextArray(value: unknown): string[] {
   // Fallback for comma-separated plain strings.
   return raw
     .split(",")
-    .map((item) => item.trim())
+    .map((item) => item.replace(/[\[\]"]/g, "").trim())
     .filter(Boolean);
+}
+
+function toCanonicalStatus(status: unknown): string {
+  const normalized = String(status || "").trim().toLowerCase().replace(/[_-]+/g, " ");
+  if (normalized === "idea") return "idea";
+  if (
+    normalized === "in development" ||
+    normalized === "in progress" ||
+    normalized === "development"
+  ) {
+    return "in development";
+  }
+  if (normalized === "mvp ready" || normalized === "mvpready") return "mvp ready";
+  if (normalized === "recruiting") return "recruiting";
+  if (normalized === "refactoring") return "refactoring";
+  return normalized;
+}
+
+function toCanonicalRole(role: unknown): string {
+  return String(role || "")
+    .replace(/[\[\]"]/g, "")
+    .replace(/[_-]+/g, " ")
+    .trim()
+    .toLowerCase();
 }
 
 /**
@@ -91,30 +109,12 @@ function normalizeTextArray(value: unknown): string[] {
 export async function getFeaturedProjects(limit: number = 4) {
   try {
     // Admin client kullan (RLS'yi bypass eder) - Anasayfa verileri public olmalı
-    const client = supabaseAdmin || supabaseServer;
+    const client = (supabaseAdmin || supabaseServer) as any;
 
+    // Keep query schema-safe: avoid FK-dependent joins.
     const { data: rawData, error } = await client
       .from("projects")
-      .select(`
-        *,
-        owner:profiles!projects_owner_id_fkey (
-          id,
-          username,
-          full_name,
-          avatar_url
-        ),
-        project_technologies (
-          technology:technologies (
-            id,
-            name,
-            category
-          )
-        ),
-        project_members (
-          id,
-          status
-        )
-      `)
+      .select("id, title, description, status, github_url, live_url, created_at, owner_id, tech_stack")
       .order("created_at", { ascending: false })
       .limit(limit);
 
@@ -123,11 +123,39 @@ export async function getFeaturedProjects(limit: number = 4) {
       return { success: false, data: [] };
     }
 
-    // Explicitly cast the data to avoid "never" type inference issues
-    const data = rawData as unknown as FeaturedProjectResponse[];
+    const data = (rawData as unknown as FeaturedProjectResponse[]) || [];
+    const ownerIds = Array.from(new Set(data.map((project) => project.owner_id).filter(Boolean)));
+    const projectIds = data.map((project) => project.id);
+
+    const [ownersResult, membersResult] = await Promise.all([
+      ownerIds.length > 0
+        ? client
+            .from("profiles")
+            .select("id, username, full_name, avatar_url")
+            .in("id", ownerIds)
+        : Promise.resolve({ data: [], error: null } as any),
+      projectIds.length > 0
+        ? client
+            .from("project_members")
+            .select("project_id, status")
+            .in("project_id", projectIds)
+            .eq("status", "accepted")
+        : Promise.resolve({ data: [], error: null } as any),
+    ]);
+
+    const ownersById = new Map<string, ProjectOwner>();
+    (ownersResult.data || []).forEach((owner: any) => {
+      ownersById.set(owner.id, owner as ProjectOwner);
+    });
+
+    const acceptedMembersByProjectId = new Map<string, number>();
+    (membersResult.data || []).forEach((member: ProjectMember) => {
+      const key = member.project_id;
+      acceptedMembersByProjectId.set(key, (acceptedMembersByProjectId.get(key) || 0) + 1);
+    });
 
     // Transform data to match component expected format
-    const transformedData = (data || []).map((project, index) => {
+    const transformedData = data.map((project, index) => {
       const colors = [
         "from-blue-500 to-cyan-500",
         "from-purple-500 to-pink-500",
@@ -136,8 +164,9 @@ export async function getFeaturedProjects(limit: number = 4) {
       ];
       const icons = ["🚀", "💡", "⚡", "🔥", "💎", "🎯"];
 
-      const techNames = project.project_technologies?.map(pt => pt.technology?.name).filter(Boolean) || [];
-      const acceptedMembers = project.project_members?.filter(pm => pm.status === "accepted")?.length || 0;
+      const techNames = normalizeTextArray(project.tech_stack).slice(0, 4);
+      const acceptedMembers = acceptedMembersByProjectId.get(project.id) || 0;
+      const owner = ownersById.get(project.owner_id) || null;
 
       return {
         id: project.id,
@@ -151,7 +180,7 @@ export async function getFeaturedProjects(limit: number = 4) {
         status: project.status,
         repoUrl: project.github_url,
         demoUrl: project.live_url,
-        owner: project.owner,
+        owner,
       };
     });
 
@@ -362,7 +391,7 @@ export async function deleteProject(projectId: string) {
  */
 export async function getProjectById(projectId: string) {
   try {
-    const client = await createSupabaseServerClient();
+    const client = (await createSupabaseServerClient()) as any;
     let { data, error } = await client
       .from("projects")
       .select(`
@@ -442,7 +471,7 @@ export async function getProjects(query: Record<string, string | undefined>) {
     const offset = parseInt(query.offset || "0", 10);
 
     // Use SSR client so authenticated user's session is forwarded to RLS.
-    const client = await createSupabaseServerClient();
+    const client = (await createSupabaseServerClient()) as any;
     
     // Tüm projeleri çek - filtreleme frontend'de yapılacak
     let queryBuilder = client
@@ -529,8 +558,25 @@ export async function getProjects(query: Record<string, string | undefined>) {
     let filteredData = data || [];
     
     // Status filtresi
-    if (query.status && query.status !== "all") {
-      filteredData = filteredData.filter((p: any) => p.status === query.status);
+    if (query.status) {
+      const requestedStatus = String(query.status).trim().toLowerCase();
+      if (requestedStatus === "all") {
+        const allowedStatuses = new Set([
+          "idea",
+          "in development",
+          "mvp ready",
+          "recruiting",
+          "refactoring",
+        ]);
+        filteredData = filteredData.filter((p: any) =>
+          allowedStatuses.has(toCanonicalStatus(p.status))
+        );
+      } else {
+        const targetStatus = toCanonicalStatus(requestedStatus);
+        filteredData = filteredData.filter(
+          (p: any) => toCanonicalStatus(p.status) === targetStatus
+        );
+      }
     }
     
     // Tech Stack filtresi - AND mantığı: TÜM seçilen teknolojiler projede olmalı
@@ -546,10 +592,13 @@ export async function getProjects(query: Record<string, string | undefined>) {
     
     // Looking For filtresi - AND mantığı: TÜM seçilen roller projede olmalı
     if (query.requiredRoles) {
-      const roles = query.requiredRoles.split(",").map((r) => r.trim().toLowerCase());
+      const roles = query.requiredRoles
+        .split(",")
+        .map((r) => toCanonicalRole(r))
+        .filter(Boolean);
       filteredData = filteredData.filter((p: any) => {
-        if (!p.looking_for || !Array.isArray(p.looking_for)) return false;
-        const projectRoles = p.looking_for.map((r: string) => String(r).trim().toLowerCase());
+        const projectRoles = normalizeTextArray(p.looking_for).map((r) => toCanonicalRole(r));
+        if (projectRoles.length === 0) return false;
         // AND mantığı: Seçilen TÜM roller projede olmalı
         return roles.every((role) => projectRoles.includes(role));
       });
@@ -561,7 +610,15 @@ export async function getProjects(query: Record<string, string | undefined>) {
       filteredData = filteredData.filter((p: any) => {
         const title = (p.title || "").toLowerCase();
         const description = (p.description || "").toLowerCase();
-        return title.includes(searchTerm) || description.includes(searchTerm);
+        const projectTechs = normalizeTextArray(p.tech_stack).map((t) => t.toLowerCase());
+        const projectRoles = normalizeTextArray(p.looking_for).map((r) => r.toLowerCase());
+
+        return (
+          title.includes(searchTerm) ||
+          description.includes(searchTerm) ||
+          projectTechs.some((tech) => tech.includes(searchTerm)) ||
+          projectRoles.some((role) => role.includes(searchTerm))
+        );
       });
     }
 
@@ -644,7 +701,7 @@ export async function getSearchSuggestions(query: string) {
  */
 export async function getSuggestedProjects(limit: number = 9) {
   try {
-    const client = supabaseAdmin || supabaseServer;
+    const client = (supabaseAdmin || supabaseServer) as any;
 
     const { data, error } = await client
       .from("projects")

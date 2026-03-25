@@ -8,7 +8,7 @@ import { AppError, HttpStatus } from "@/lib/utils/errors";
  */
 export async function checkDuplicateProfiles(userId: string) {
   try {
-    const client = supabaseAdmin || supabaseServer;
+    const client = (supabaseAdmin || supabaseServer) as any;
     
     const { data, error } = await client
       .from("profiles")
@@ -39,7 +39,7 @@ export async function checkDuplicateProfiles(userId: string) {
  */
 export async function cleanDuplicateProfiles(userId: string) {
   try {
-    const client = supabaseAdmin || supabaseServer;
+    const client = (supabaseAdmin || supabaseServer) as any;
     
     // Get all profiles for this user, ordered by created_at
     const { data: profiles, error: fetchError } = await client
@@ -61,7 +61,7 @@ export async function cleanDuplicateProfiles(userId: string) {
 
     // Keep the first (oldest) profile, delete the rest
     const profilesToDelete = profiles.slice(1);
-    const idsToDelete = profilesToDelete.map(p => p.id);
+    const idsToDelete = profilesToDelete.map((p: any) => p.id);
 
     const { error: deleteError } = await client
       .from("profiles")
@@ -101,7 +101,7 @@ export async function cleanDuplicateProfiles(userId: string) {
  */
 export async function createProfileIfNotExists(userId: string, email?: string) {
   try {
-    const client = supabaseAdmin || supabaseServer;
+    const client = (supabaseAdmin || supabaseServer) as any;
     
     if (!client) {
       throw new AppError(

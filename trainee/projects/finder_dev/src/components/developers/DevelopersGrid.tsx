@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { searchUsers } from "@/app/actions/users";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { TiltCard, GradientBorder } from "@/components/effects/PremiumEffects";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface Developer {
     id: string;
@@ -15,6 +15,7 @@ interface Developer {
     bio: string | null;
     website_url: string | null;
     github_url: string | null;
+    user_tag?: string | null;
 }
 
 const containerVariants = {
@@ -55,50 +56,34 @@ export function DevelopersGrid({ searchQuery = "" }: DevelopersGridProps) {
             setLoading(true);
             setError(null);
             try {
-                console.log("[DevelopersGrid] Starting data fetch...");
                 const query: Record<string, string> = {
-                    limit: "1000", // Fetch all developers
+                    limit: "1000",
                 };
                 if (searchQuery) {
                     query.search = searchQuery;
-                    console.log("[DevelopersGrid] Search query:", searchQuery);
                 }
 
-                console.log("[DevelopersGrid] Calling searchUsers with query:", query);
                 const result = await searchUsers(query);
-                console.log("[DevelopersGrid] searchUsers sonucu:", {
-                    success: result.success,
-                    dataLength: result.data?.length || 0,
-                    data: result.data
-                });
 
                 if (!result.success) {
-                    console.error("[DevelopersGrid] searchUsers failed:", result);
                     throw new Error("An error occurred while loading developers.");
                 }
 
                 const developersData = result.data || [];
-                console.log("[DevelopersGrid] Number of developers fetched:", developersData.length);
 
                 if (!cancelled) {
                     setDevelopers(developersData);
-                    if (developersData.length === 0) {
-                        console.warn("[DevelopersGrid] No developers found!");
-                    }
                 }
             } catch (err) {
-                console.error("[DevelopersGrid] Error caught:", err);
                 if (!cancelled) {
                     const errorMessage = err instanceof Error 
                         ? err.message 
                         : "Developers could not be loaded.";
                     setError(errorMessage);
-                    console.error("[DevelopersGrid] Error message:", errorMessage);
                 }
             } finally {
                 if (!cancelled) {
                     setLoading(false);
-                    console.log("[DevelopersGrid] Loading completed");
                 }
             }
         }
@@ -112,7 +97,7 @@ export function DevelopersGrid({ searchQuery = "" }: DevelopersGridProps) {
     }, [searchQuery]);
 
     return (
-        <div className="container py-10">
+        <div className="py-4">
             {loading && (
                 <div className="text-center py-20">
                     <p className="text-muted-foreground text-lg">Loading developers...</p>
@@ -133,7 +118,7 @@ export function DevelopersGrid({ searchQuery = "" }: DevelopersGridProps) {
                 <div className="text-center py-20">
                     <p className="text-muted-foreground text-lg mb-2">No developers found yet.</p>
                     <p className="text-muted-foreground text-sm">
-                        There may be no developers in the database, or something might have gone wrong.
+                        Try using a different keyword or clearing search.
                     </p>
                 </div>
             )}
@@ -154,12 +139,17 @@ export function DevelopersGrid({ searchQuery = "" }: DevelopersGridProps) {
                     ];
                     const color = colors[index % colors.length];
                     const isEmoji = dev.avatar_url?.startsWith("👨") || dev.avatar_url?.startsWith("👩") || dev.avatar_url?.startsWith("🧑");
+                    const profileHref = `/profile/${dev.id}`;
 
                     return (
                         <motion.div key={dev.id} variants={itemVariants}>
-                            <TiltCard>
-                                <GradientBorder>
-                                    <div className="bg-slate-900/90 backdrop-blur-sm rounded-2xl p-6 text-center relative overflow-hidden h-full flex flex-col items-center">
+                            <motion.div
+                                whileHover={{ y: -4, scale: 1.02 }}
+                                transition={{ duration: 0.3, ease: "easeOut" }}
+                                className="h-full"
+                            >
+                                <Card className="h-full transition-all duration-300 ease-out cursor-pointer rounded-xl border-slate-800/50 bg-white/5 backdrop-blur-sm hover:border-pink-500/30 hover:shadow-[0_0_20px_rgba(236,72,153,0.4)]">
+                                    <CardContent className="p-6 text-center relative overflow-hidden h-full flex flex-col items-center">
                                         {/* Glow */}
                                         <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-32 h-32 bg-gradient-to-b ${color} opacity-10 blur-3xl`} />
 
@@ -172,36 +162,33 @@ export function DevelopersGrid({ searchQuery = "" }: DevelopersGridProps) {
                                         </div>
 
                                         <h3 className="text-xl font-bold text-white mb-1">{dev.full_name || dev.username}</h3>
-                                        <p className="text-white/50 text-sm mb-4">@{dev.username}</p>
+                                        {dev.user_tag && (
+                                            <p className="text-blue-300/80 text-xs mb-4">#{dev.user_tag}</p>
+                                        )}
 
-                                        {dev.bio && (
+                                        {dev.bio ? (
                                             <p className="text-white/70 text-sm mb-6 line-clamp-2">{dev.bio}</p>
+                                        ) : (
+                                            <p className="text-white/40 text-sm mb-6 line-clamp-2">No bio added yet.</p>
                                         )}
 
                                         <div className="mt-auto w-full">
-                                            <Link href={`/profile/${dev.id}`} className="w-full block">
-                                                <Button variant="outline" className="w-full border-slate-700 hover:bg-slate-800">
+                                            <Link href={profileHref} className="w-full block">
+                                                <Button
+                                                    variant="ghost"
+                                                    className="w-full text-blue-500 hover:text-blue-400 hover:bg-blue-500/10 transition-colors"
+                                                >
                                                     View Profile
                                                 </Button>
                                             </Link>
                                         </div>
-                                    </div>
-                                </GradientBorder>
-                            </TiltCard>
+                                    </CardContent>
+                                </Card>
+                            </motion.div>
                         </motion.div>
                     )
                 })}
                 </motion.div>
-            )}
-
-            {/* Debug info - show only in development */}
-            {process.env.NODE_ENV === 'development' && !loading && (
-                <div className="mt-8 p-4 bg-slate-800/50 rounded-lg border border-slate-700">
-                    <p className="text-xs text-slate-400">
-                        Debug: {developers.length} developers loaded. 
-                        {error && ` Error: ${error}`}
-                    </p>
-                </div>
             )}
         </div>
     );

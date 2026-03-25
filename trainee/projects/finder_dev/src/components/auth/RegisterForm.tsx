@@ -118,7 +118,7 @@ export function RegisterForm() {
                                     <>
                                         Your account has been created successfully! <br />
                                         Activate your account by clicking the confirmation link sent to your email. <br />
-                                        <span className="text-xs text-slate-500 mt-2 block">Don't forget to check your inbox!</span>
+                                        <span className="text-xs text-slate-500 mt-2 block">Don&apos;t forget to check your inbox!</span>
                                     </>
                                 ) : (
                                     <>

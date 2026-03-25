@@ -8,15 +8,6 @@ import { AppError, ErrorMessages, HttpStatus } from "@/lib/utils/errors";
 import { supabaseServer, supabaseAdmin } from "@/lib/supabase/server";
 
 // Define types for Supabase response
-interface DeveloperProject {
-  id: string;
-}
-
-interface DeveloperMemberProject {
-  id: string;
-  status: string;
-}
-
 interface FeaturedDeveloperResponse {
   id: string;
   username: string;
@@ -25,9 +16,7 @@ interface FeaturedDeveloperResponse {
   bio: string | null;
   website_url: string | null;
   github_url: string | null;
-  created_at: string;
-  owned_projects: DeveloperProject[];
-  member_projects: DeveloperMemberProject[];
+  updated_at?: string;
 }
 
 /**
@@ -35,18 +24,13 @@ interface FeaturedDeveloperResponse {
  */
 export async function getFeaturedDevelopers(limit: number = 4) {
   try {
-    // Get profiles with their project counts
-    const { data: rawData, error } = await supabaseServer
+    const client = (supabaseAdmin || supabaseServer) as any;
+
+    // Keep query schema-safe: avoid FK-dependent joins here.
+    const { data: rawData, error } = await client
       .from("profiles")
-      .select(`
-        *,
-        owned_projects:projects!projects_owner_id_fkey (id),
-        member_projects:project_members!project_members_user_id_fkey (
-          id,
-          status
-        )
-      `)
-      .order("created_at", { ascending: false })
+      .select("id, username, full_name, avatar_url, bio, website_url, github_url, updated_at")
+      .order("updated_at", { ascending: false, nullsFirst: false })
       .limit(limit);
 
     if (error) {
@@ -55,7 +39,35 @@ export async function getFeaturedDevelopers(limit: number = 4) {
     }
 
     // Cast data
-    const profiles = rawData as unknown as FeaturedDeveloperResponse[];
+    const profiles = (rawData as unknown as FeaturedDeveloperResponse[]) || [];
+    const profileIds = profiles.map((p) => p.id).filter(Boolean);
+
+    const ownedCountByUser = new Map<string, number>();
+    const acceptedMemberCountByUser = new Map<string, number>();
+
+    if (profileIds.length > 0) {
+      const [ownedProjectsResult, acceptedMembersResult] = await Promise.all([
+        client
+          .from("projects")
+          .select("owner_id")
+          .in("owner_id", profileIds),
+        client
+          .from("project_members")
+          .select("user_id")
+          .in("user_id", profileIds)
+          .eq("status", "accepted"),
+      ]);
+
+      (ownedProjectsResult.data || []).forEach((row: any) => {
+        const key = row.owner_id as string;
+        ownedCountByUser.set(key, (ownedCountByUser.get(key) || 0) + 1);
+      });
+
+      (acceptedMembersResult.data || []).forEach((row: any) => {
+        const key = row.user_id as string;
+        acceptedMemberCountByUser.set(key, (acceptedMemberCountByUser.get(key) || 0) + 1);
+      });
+    }
 
     // Transform data to match component expected format
     const colors = [
@@ -67,9 +79,9 @@ export async function getFeaturedDevelopers(limit: number = 4) {
     const avatars = ["👨‍💻", "👩‍💻", "🧑‍💻", "👩‍🔬", "🧑‍🔬"];
     const roles = ["Full Stack Developer", "Frontend Developer", "Backend Developer", "Mobile Developer", "DevOps Engineer"];
 
-    const transformedData = (profiles || []).map((profile, index) => {
-      const ownedCount = profile.owned_projects?.length || 0;
-      const memberCount = profile.member_projects?.filter(pm => pm.status === "accepted")?.length || 0;
+    const transformedData = profiles.map((profile, index) => {
+      const ownedCount = ownedCountByUser.get(profile.id) || 0;
+      const memberCount = acceptedMemberCountByUser.get(profile.id) || 0;
       const totalProjects = ownedCount + memberCount;
 
       return {
@@ -145,10 +157,10 @@ async function syncProfileId(oldId: string, newId: string) {
 
     // Update the profile ID
     // Since ID is primary key, we need to delete and recreate
-    const { id, ...profileData } = oldProfile;
+    const { id, ...profileData } = oldProfile as any;
     
     // Delete old profile
-    const { error: deleteError } = await supabaseAdmin
+    const { error: deleteError } = await (supabaseAdmin as any)
       .from("profiles")
       .delete()
       .eq("id", oldId);
@@ -161,7 +173,7 @@ async function syncProfileId(oldId: string, newId: string) {
     }
 
     // Create new profile with correct ID
-    const { data: newProfile, error: createError } = await supabaseAdmin
+    const { data: newProfile, error: createError } = await (supabaseAdmin as any)
       .from("profiles")
       .insert({
         ...profileData,
@@ -197,7 +209,7 @@ export async function updateUserProfile(input: UpdateUserProfileInput & { id: st
     const validatedData = updateUserProfileSchema.parse(input);
     const { id, ...updateData } = input;
 
-    const client = supabaseAdmin || supabaseServer;
+    const client = (supabaseAdmin || supabaseServer) as any;
 
     // Check if profile ID matches auth user ID
     // If not, sync the ID first
@@ -223,6 +235,9 @@ export async function updateUserProfile(input: UpdateUserProfileInput & { id: st
     if (updateData.bio !== undefined) updatePayload.bio = updateData.bio;
     if (updateData.avatarUrl !== undefined) {
       updatePayload.avatar_url = updateData.avatarUrl || null;
+    }
+    if (updateData.visibility !== undefined) {
+      updatePayload.visibility = updateData.visibility;
     }
 
     // Opsiyonel sosyal linkleri uygun kolonlara map ediyoruz
@@ -305,7 +320,7 @@ async function getUserEmail(userId: string): Promise<string | null> {
  */
 async function findProfileByEmail(email: string, excludeId?: string) {
   try {
-    const client = supabaseAdmin || supabaseServer;
+    const client = (supabaseAdmin || supabaseServer) as any;
     
     // Note: We can't directly JOIN auth.users, but we can search profiles
     // If profiles table has email column, use it. Otherwise, we'll need to match via username
@@ -353,7 +368,7 @@ export async function getUserProfile(userId: string, userEmail?: string): Promis
     console.log("[getUserProfile] Kullanıcı ID:", userId);
     
     // RLS bypass için admin client kullan (varsa), yoksa normal client kullan
-    const client = supabaseAdmin || supabaseServer;
+    const client = (supabaseAdmin || supabaseServer) as any;
     console.log("[getUserProfile] Supabase client kullanılıyor:", supabaseAdmin ? "Admin (RLS bypass)" : "Server (RLS active)");
 
     // First, try to get profile by ID
@@ -381,7 +396,7 @@ export async function getUserProfile(userId: string, userEmail?: string): Promis
       console.log("[getUserProfile] ID ile profil bulunamadı, email fallback deneniyor...");
       
       // Get user email if not provided
-      let email = userEmail;
+      let email: string | null = userEmail || null;
       if (!email) {
         email = await getUserEmail(userId);
       }
@@ -450,7 +465,7 @@ export async function searchUsers(query: Record<string, string | undefined>) {
     console.log("[searchUsers] Limit:", limit, "Offset:", offset);
 
     // RLS bypass için admin client kullan (varsa), yoksa normal client kullan
-    const client = supabaseAdmin || supabaseServer;
+    const client = (supabaseAdmin || supabaseServer) as any;
     console.log("[searchUsers] Supabase client kullanılıyor:", supabaseAdmin ? "Admin (RLS bypass)" : "Server (RLS active)");
 
     // Yeni şemada users yerine profiles tablosu var
@@ -458,19 +473,18 @@ export async function searchUsers(query: Record<string, string | undefined>) {
       count: "exact",
     });
 
-    // Apply search filter
-    if (query.search) {
-      // full_name, username ve bio üzerinden arama yapıyoruz
-      const searchPattern = `full_name.ilike.%${query.search}%,username.ilike.%${query.search}%,bio.ilike.%${query.search}%`;
-      console.log("[searchUsers] Arama pattern:", searchPattern);
-      queryBuilder = queryBuilder.or(searchPattern);
+    const searchTerm = (query.search || "").trim().toLowerCase();
+
+    // Search varken geniş pencere çekip bellek içinde çok alanlı filtreleme yapıyoruz.
+    // Böylece gelecekte eklenecek uzmanlık alanları da (skills/expertise vb.) kapsanabilir.
+    if (searchTerm) {
+      queryBuilder = queryBuilder.limit(1000);
+    } else {
+      queryBuilder = queryBuilder.range(offset, offset + limit - 1);
     }
 
-    // Apply pagination
-    queryBuilder = queryBuilder.range(offset, offset + limit - 1);
-
-    // Order by created_at descending
-    queryBuilder = queryBuilder.order("created_at", { ascending: false });
+    // Order by updated_at descending (profiles table doesn't have created_at in current schema)
+    queryBuilder = queryBuilder.order("updated_at", { ascending: false, nullsFirst: false });
 
     console.log("[searchUsers] Supabase sorgusu gönderiliyor...");
     const { data, error, count } = await queryBuilder;
@@ -483,16 +497,85 @@ export async function searchUsers(query: Record<string, string | undefined>) {
       );
     }
 
-    console.log("[searchUsers] Başarılı! Veri sayısı:", data?.length || 0, "Toplam:", count);
+    const rawUsers = (data || []) as Array<Record<string, unknown>>;
+
+    const toSearchableTokens = (value: unknown): string[] => {
+      if (value == null) return [];
+      if (Array.isArray(value)) {
+        return value.flatMap((item) => toSearchableTokens(item));
+      }
+      if (typeof value === "string") {
+        const raw = value.trim();
+        if (!raw) return [];
+        if ((raw.startsWith("[") && raw.endsWith("]")) || (raw.startsWith("{") && raw.endsWith("}"))) {
+          try {
+            const normalized = raw.startsWith("{") ? `[${raw.slice(1, -1)}]` : raw;
+            const parsed = JSON.parse(normalized);
+            return toSearchableTokens(parsed);
+          } catch {
+            // Fallback to plain tokenization below.
+          }
+        }
+        return raw
+          .split(",")
+          .map((token) => token.replace(/[\[\]"]/g, "").trim())
+          .filter(Boolean);
+      }
+      if (typeof value === "number" || typeof value === "boolean") {
+        return [String(value)];
+      }
+      if (typeof value === "object") {
+        return Object.values(value as Record<string, unknown>).flatMap((item) => toSearchableTokens(item));
+      }
+      return [];
+    };
+
+    const matchesSearch = (user: Record<string, unknown>, term: string) => {
+      if (!term) return true;
+      const directFields = [
+        user.id,
+        user.full_name,
+        user.username,
+        user.user_tag,
+      ];
+      const haystack = directFields
+        .flatMap((field) => toSearchableTokens(field))
+        .join(" ")
+        .toLowerCase();
+
+      return haystack.includes(term);
+    };
+
+    const filteredUsers = searchTerm
+      ? rawUsers.filter((user) => matchesSearch(user, searchTerm))
+      : rawUsers;
+
+    const paginatedUsers = searchTerm
+      ? filteredUsers.slice(offset, offset + limit)
+      : filteredUsers;
+
+    const total = searchTerm ? filteredUsers.length : count || 0;
+    const usersWithEmail = await Promise.all(
+      paginatedUsers.map(async (user) => {
+        const userId = typeof user.id === "string" ? user.id : "";
+        const email = userId ? await getUserEmail(userId) : null;
+        return {
+          ...user,
+          email,
+        };
+      })
+    );
+
+    console.log("[searchUsers] Başarılı! Veri sayısı:", paginatedUsers.length, "Toplam:", total);
 
     return {
       success: true,
-      data: data || [],
+      data: usersWithEmail,
       pagination: {
-        total: count || 0,
+        total,
         limit,
         offset,
-        hasMore: (count || 0) > offset + limit,
+        hasMore: total > offset + limit,
       },
     };
   } catch (error) {

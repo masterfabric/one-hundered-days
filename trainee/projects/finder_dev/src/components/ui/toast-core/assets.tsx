@@ -6,7 +6,7 @@
 import React from 'react';
 import type { ToastTypes } from './types';
 
-export const getAsset = (type: ToastTypes): JSX.Element | null => {
+export const getAsset = (type: ToastTypes): React.ReactNode => {
   switch (type) {
     case 'success':
       return SuccessIcon;

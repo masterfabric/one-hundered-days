@@ -57,7 +57,7 @@ function TestimonialCard({ testimonial, index }: { testimonial: typeof testimoni
                         }}
                         transition={{ duration: 3, repeat: Infinity }}
                     >
-                        "
+                        &quot;
                     </motion.div>
 
                     {/* Text */}
@@ -94,7 +94,7 @@ function TestimonialCard({ testimonial, index }: { testimonial: typeof testimoni
                     </div>
 
                     {/* Decorative quote mark at bottom */}
-                    <div className="absolute bottom-4 right-6 text-6xl text-white/5 font-serif rotate-180">"</div>
+                    <div className="absolute bottom-4 right-6 text-6xl text-white/5 font-serif rotate-180">&quot;</div>
                 </motion.div>
             </TiltCard>
         </Reveal>

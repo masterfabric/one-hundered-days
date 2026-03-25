@@ -105,7 +105,7 @@ export function Header() {
             .single();
 
           if (!profileError && profileData) {
-            console.log("[Header] Profile reloaded after update:", profileData.username);
+            console.log("[Header] Profile reloaded after update:", (profileData as any).username);
             setProfile(profileData as UserProfile);
           }
         } catch (profileErr) {

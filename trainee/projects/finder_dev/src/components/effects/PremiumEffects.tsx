@@ -5,24 +5,36 @@ import { useRef, useEffect, useState, ReactNode } from "react";
 
 // ==================== CURSOR FOLLOW SPOTLIGHT ====================
 export function CursorSpotlight({ children }: { children: ReactNode }) {
-    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+    const mouseX = useMotionValue(0);
+    const mouseY = useMotionValue(0);
+
+    const smoothX = useSpring(mouseX, { stiffness: 100, damping: 20 });
+    const smoothY = useSpring(mouseY, { stiffness: 100, damping: 20 });
+
+    const background = useTransform(
+        [smoothX, smoothY],
+        ([x, y]) => `radial-gradient(600px circle at ${x}px ${y}px, rgba(59, 130, 246, 0.06), transparent 40%)`
+    );
+
+    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
+        setMounted(true);
         const handleMouseMove = (e: MouseEvent) => {
-            setMousePosition({ x: e.clientX, y: e.clientY });
+            mouseX.set(e.clientX);
+            mouseY.set(e.clientY);
         };
         window.addEventListener("mousemove", handleMouseMove);
         return () => window.removeEventListener("mousemove", handleMouseMove);
-    }, []);
+    }, [mouseX, mouseY]);
+
+    if (!mounted) return <div className="relative">{children}</div>;
 
     return (
         <div className="relative">
-            {/* Spotlight effect */}
             <motion.div
                 className="pointer-events-none fixed inset-0 z-30 transition-opacity duration-300"
-                animate={{
-                    background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(59, 130, 246, 0.06), transparent 40%)`,
-                }}
+                style={{ background }}
             />
             {children}
         </div>
@@ -65,6 +77,12 @@ export function TiltCard({ children, className = "", glareEnable = true }: TiltC
         y.set(0);
     };
 
+    const glareTransform = useTransform(
+        [mouseXSpring, mouseYSpring],
+        ([latestX, latestY]) =>
+            `radial-gradient(circle at ${(latestX as number + 0.5) * 100}% ${(latestY as number + 0.5) * 100}%, rgba(255,255,255,0.15), transparent 40%)`
+    );
+
     return (
         <motion.div
             ref={ref}
@@ -82,11 +100,7 @@ export function TiltCard({ children, className = "", glareEnable = true }: TiltC
                 <motion.div
                     className="absolute inset-0 rounded-2xl pointer-events-none"
                     style={{
-                        background: useTransform(
-                            [mouseXSpring, mouseYSpring],
-                            ([latestX, latestY]) =>
-                                `radial-gradient(circle at ${(latestX as number + 0.5) * 100}% ${(latestY as number + 0.5) * 100}%, rgba(255,255,255,0.15), transparent 40%)`
-                        ),
+                        background: glareTransform,
                     }}
                 />
             )}
@@ -193,22 +207,21 @@ export function MorphingBlob({ className = "" }: { className?: string }) {
 
 // ==================== INTERACTIVE PARTICLES ====================
 export function InteractiveParticles({ count = 30 }: { count?: number }) {
-    const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+    const mouseX = useMotionValue(0);
+    const mouseY = useMotionValue(0);
     const containerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
             if (containerRef.current) {
                 const rect = containerRef.current.getBoundingClientRect();
-                setMousePos({
-                    x: e.clientX - rect.left,
-                    y: e.clientY - rect.top,
-                });
+                mouseX.set(e.clientX - rect.left);
+                mouseY.set(e.clientY - rect.top);
             }
         };
         window.addEventListener("mousemove", handleMouseMove);
         return () => window.removeEventListener("mousemove", handleMouseMove);
-    }, []);
+    }, [mouseX, mouseY]);
 
     const particles = [...Array(count)].map((_, i) => ({
         id: i,
@@ -221,28 +234,48 @@ export function InteractiveParticles({ count = 30 }: { count?: number }) {
     return (
         <div ref={containerRef} className="absolute inset-0 overflow-hidden pointer-events-none">
             {particles.map((particle) => (
-                <motion.div
-                    key={particle.id}
-                    className="absolute bg-blue-400/30 rounded-full"
-                    style={{
-                        width: particle.size,
-                        height: particle.size,
-                        left: `${particle.x}%`,
-                        top: `${particle.y}%`,
-                    }}
-                    animate={{
-                        x: [0, (mousePos.x - (containerRef.current?.clientWidth || 0) / 2) * 0.02],
-                        y: [0, (mousePos.y - (containerRef.current?.clientHeight || 0) / 2) * 0.02],
-                        opacity: [0.2, 0.6, 0.2],
-                    }}
-                    transition={{
-                        duration: particle.duration,
-                        repeat: Infinity,
-                        ease: "easeInOut",
-                    }}
-                />
+                <Particle key={particle.id} particle={particle} mouseX={mouseX} mouseY={mouseY} containerRef={containerRef} />
             ))}
         </div>
+    );
+}
+
+function Particle({ particle, mouseX, mouseY, containerRef }: { 
+    particle: any; 
+    mouseX: any; 
+    mouseY: any; 
+    containerRef: React.RefObject<HTMLDivElement> 
+}) {
+    const xTransform = useTransform(mouseX, (latestX) => {
+        const containerWidth = containerRef.current?.clientWidth || 0;
+        return (latestX - containerWidth / 2) * 0.02;
+    });
+
+    const yTransform = useTransform(mouseY, (latestY) => {
+        const containerHeight = containerRef.current?.clientHeight || 0;
+        return (latestY - containerHeight / 2) * 0.02;
+    });
+
+    return (
+        <motion.div
+            className="absolute bg-blue-400/30 rounded-full"
+            style={{
+                width: particle.size,
+                height: particle.size,
+                left: `${particle.x}%`,
+                top: `${particle.y}%`,
+                x: xTransform,
+                y: yTransform,
+            }}
+            animate={{
+                opacity: [0.2, 0.6, 0.2],
+            }}
+            transition={{
+                duration: particle.duration,
+                repeat: Infinity,
+                ease: "easeInOut",
+            }}
+        />
     );
 }
 

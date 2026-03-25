@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Calendar, ExternalLink, Github, UserRound } from "lucide-react";
+import { ArrowLeft, Calendar, ExternalLink, Github, Users, Hourglass } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,7 @@ import { getProjectById } from "@/app/actions/projects";
 
 type ProjectDetailPageProps = {
   params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 function formatDate(value?: string) {
@@ -22,8 +23,42 @@ function formatDate(value?: string) {
   }).format(date);
 }
 
-export default async function ProjectDetailPage({ params }: ProjectDetailPageProps) {
-  const { id } = await params;
+function normalizeTextArray(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.flatMap((item) => normalizeTextArray(item)).filter(Boolean);
+  }
+  if (typeof value !== "string") return [];
+
+  const raw = value.trim();
+  if (!raw) return [];
+
+  if ((raw.startsWith("[") && raw.endsWith("]")) || (raw.startsWith("{") && raw.endsWith("}"))) {
+    try {
+      const normalizedJson = raw.startsWith("{") ? `[${raw.slice(1, -1)}]` : raw;
+      const parsed = JSON.parse(normalizedJson);
+      if (Array.isArray(parsed)) {
+        return parsed.map((entry) => String(entry).trim()).filter(Boolean);
+      }
+    } catch {
+      // Continue with string fallback.
+    }
+  }
+
+  return raw
+    .split(",")
+    .map((item) => item.replace(/[\[\]"]/g, "").trim())
+    .filter(Boolean);
+}
+
+function getMockDeadline(createdAt?: string): string {
+  const baseDate = createdAt ? new Date(createdAt) : new Date();
+  if (Number.isNaN(baseDate.getTime())) return "TBD (mock)";
+  baseDate.setDate(baseDate.getDate() + 45);
+  return formatDate(baseDate.toISOString());
+}
+
+export default async function ProjectDetailPage({ params, searchParams }: ProjectDetailPageProps) {
+  const [{ id }] = await Promise.all([params, searchParams]);
   let result: Awaited<ReturnType<typeof getProjectById>> | null = null;
 
   try {
@@ -39,12 +74,43 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
   const project = result.data as Record<string, any>;
   const githubUrl = project.github_url || project.repo_url;
   const liveUrl = project.live_url || project.demo_url;
-  const techStack = Array.isArray(project.tech_stack) ? project.tech_stack : [];
-  const lookingFor = Array.isArray(project.looking_for) ? project.looking_for : [];
+  const techStack = normalizeTextArray(project.tech_stack);
+  const lookingFor = normalizeTextArray(project.looking_for).map((role) => role.replace(/_/g, " "));
   const owner = project.owner || null;
   const ownerName = owner?.full_name || owner?.username || "Unknown user";
   const ownerUsername = owner?.username ? `@${owner.username}` : "";
   const ownerAvatar = owner?.avatar_url;
+  const teamCapacity = 10;
+  const teamMembers = [
+    {
+      id: owner?.id || "owner",
+      name: ownerName,
+      role: ownerUsername ? `Owner • ${ownerUsername}` : "Owner",
+      avatar:
+        ownerAvatar ||
+        `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(ownerName)}&eyes=default&eyebrows=default&mouth=smile&accessoriesProbability=0&facialHairProbability=0&skinColor=f2d3b1`,
+    },
+    {
+      id: "mock-member-1",
+      name: "Elif Demir",
+      role: "Frontend Developer",
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=ElifDemir",
+    },
+    {
+      id: "mock-member-2",
+      name: "Can Yildiz",
+      role: "Backend Developer",
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=CanYildiz&eyes=default&eyebrows=default&mouth=smile&accessoriesProbability=0&facialHairProbability=0&skinColor=f2d3b1",
+    },
+    {
+      id: "mock-member-3",
+      name: "Zeynep Arslan",
+      role: "UI/UX Designer",
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=ZeynepArslan",
+    },
+  ];
+  const teamCurrent = teamMembers.length;
+  const deadlineLabel = project.deadline ? formatDate(project.deadline) : getMockDeadline(project.created_at);
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-950">
@@ -143,7 +209,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
                           variant="secondary"
                           className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-purple-400/30 text-purple-100"
                         >
-                          {role.replace(/_/g, " ")}
+                          {role}
                         </Badge>
                       ))
                     ) : (
@@ -154,24 +220,62 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
 
                 <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-5">
                   <h3 className="text-sm uppercase tracking-wider text-slate-400 mb-3">
-                    Project Owner
+                    Capacity & Deadline
                   </h3>
-                  <div className="flex items-center gap-3">
-                    {ownerAvatar ? (
-                      <img
-                        src={ownerAvatar}
-                        alt={ownerName}
-                        className="h-11 w-11 rounded-full object-cover border border-white/20"
-                      />
-                    ) : (
-                      <div className="h-11 w-11 rounded-full bg-slate-800 border border-white/10 flex items-center justify-center">
-                        <UserRound className="h-5 w-5 text-slate-300" />
+                  <div className="space-y-4">
+                    <div className="rounded-lg border border-slate-700/70 bg-slate-900/60 p-3">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="inline-flex items-center gap-2 text-slate-300">
+                          <Users className="h-4 w-4 text-blue-300" />
+                          Team Capacity
+                        </span>
+                        <span className="text-white font-semibold">{teamCurrent}/{teamCapacity}</span>
                       </div>
-                    )}
-                    <div className="min-w-0">
-                      <p className="text-white font-medium truncate">{ownerName}</p>
-                      {ownerUsername && <p className="text-slate-400 text-sm">{ownerUsername}</p>}
+                      <div className="mt-2 h-2 rounded-full bg-slate-800">
+                        <div
+                          className="h-2 rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
+                          style={{ width: `${Math.min((teamCurrent / teamCapacity) * 100, 100)}%` }}
+                        />
+                      </div>
                     </div>
+
+                    <div className="rounded-lg border border-slate-700/70 bg-slate-900/60 p-3">
+                      <p className="inline-flex items-center gap-2 text-sm text-slate-300">
+                        <Hourglass className="h-4 w-4 text-purple-300" />
+                        Deadline
+                      </p>
+                      <p className="text-white font-semibold mt-1">{deadlineLabel}</p>
+                      <p className="text-xs text-slate-500 mt-1">
+                        Mock value for now; Supabase field will be connected later.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-5">
+                  <h3 className="text-sm uppercase tracking-wider text-slate-400 mb-3">
+                    Team
+                  </h3>
+                  <div className="space-y-3">
+                    {teamMembers.map((member) => (
+                      <div
+                        key={member.id}
+                        className="flex items-center gap-3 rounded-lg border border-slate-700/70 bg-slate-900/60 p-3"
+                      >
+                        <img
+                          src={member.avatar}
+                          alt={member.name}
+                          className="h-11 w-11 rounded-full object-cover border border-white/20"
+                        />
+                        <div className="min-w-0">
+                          <p className="text-white font-medium truncate">{member.name}</p>
+                          <p className="text-slate-400 text-sm truncate">{member.role}</p>
+                        </div>
+                      </div>
+                    ))}
+                    <p className="text-xs text-slate-500">
+                      Mock members and avatars for now. Will be connected to Supabase team data and profile photos.
+                    </p>
                   </div>
                 </div>
               </aside>

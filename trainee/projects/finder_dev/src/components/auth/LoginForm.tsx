@@ -215,7 +215,7 @@ export function LoginForm() {
                             </form>
 
                             <div className="mt-8 text-center text-sm text-slate-500">
-                                Don't have an account?{" "}
+                                Don&apos;t have an account?{" "}
                                 <Link href="/register" className="text-blue-400 hover:text-blue-300 font-medium hover:underline decoration-blue-500/30 underline-offset-4 transition-colors">
                                     Sign up now
                                 </Link>

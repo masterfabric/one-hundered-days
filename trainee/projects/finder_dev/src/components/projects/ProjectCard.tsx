@@ -81,6 +81,11 @@ function formatStatus(status: string): string {
     .join(" ");
 }
 
+function formatRoleLabel(role: string): string {
+  const cleaned = role.replace(/[\[\]"]/g, "").trim();
+  return cleaned.replace(/_/g, " ");
+}
+
 export function ProjectCard({
   id,
   title,
@@ -155,7 +160,7 @@ export function ProjectCard({
                         variant="secondary" 
                         className="text-xs bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 border-purple-500/40 hover:from-purple-500/30 hover:to-pink-500/30 transition-colors"
                       >
-                        {role.replace(/_/g, " ")}
+                        {formatRoleLabel(role)}
                       </Badge>
                     ))}
                     {requiredRoles.length > 6 && (

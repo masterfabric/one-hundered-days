@@ -144,7 +144,7 @@ const Toast = (props: ToastProps) => {
   const invert = toast.invert || ToasterInvert;
   const disabled = toastType === 'loading';
 
-  offset.current = React.useMemo(() => heightIndex * (gap ?? 14) + toastsHeightBefore, [heightIndex, toastsHeightBefore]);
+  offset.current = React.useMemo(() => heightIndex * (gap ?? 14) + toastsHeightBefore, [heightIndex, toastsHeightBefore, gap]);
 
   React.useEffect(() => {
     remainingTime.current = duration;
@@ -164,7 +164,7 @@ const Toast = (props: ToastProps) => {
       setHeights((h) => [{ toastId: toast.id, height, position: toast.position as any }, ...h]);
       return () => setHeights((h) => h.filter((height) => height.toastId !== toast.id));
     }
-  }, [setHeights, toast.id]);
+  }, [setHeights, toast.id, toast.position]);
 
   React.useLayoutEffect(() => {
     // Keep height up to date with the content in case it updates
@@ -186,7 +186,7 @@ const Toast = (props: ToastProps) => {
         return heights.map((height) => (height.toastId === toast.id ? { ...height, height: newHeight } : height));
       }
     });
-  }, [mounted, toast.title, toast.description, setHeights, toast.id, toast.jsx, toast.action, toast.cancel]);
+  }, [mounted, toast.title, toast.description, setHeights, toast.id, toast.jsx, toast.action, toast.cancel, toast.position]);
 
   const deleteToast = React.useCallback(() => {
     // Save the offset for the exit swipe animation
@@ -197,7 +197,7 @@ const Toast = (props: ToastProps) => {
     setTimeout(() => {
       removeToast(toast);
     }, TIME_BEFORE_UNMOUNT);
-  }, [toast, removeToast, setHeights, offset]);
+  }, [toast, removeToast, setHeights]);
 
   React.useEffect(() => {
     if ((toast.promise && toastType === 'loading') || toast.duration === Infinity || toast.type === 'loading') return;

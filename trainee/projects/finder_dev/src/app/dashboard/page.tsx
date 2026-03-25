@@ -15,9 +15,40 @@ import { supabase } from "@/lib/supabase/client";
 import Link from "next/link";
 import { Compass, FilePlus2, FolderKanban, MessageSquare, Sparkles } from "lucide-react";
 
+type DashboardMetrics = {
+    projects: number;
+    completedProjects: number;
+    collaborations: number;
+    unreadNotifications: number;
+};
+
+type ActivityItem = {
+    id: string;
+    label: string;
+    timestamp: string;
+};
+
+function formatActivityTime(value: string) {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "Unknown time";
+    return new Intl.DateTimeFormat("en-US", {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+    }).format(date);
+}
+
 export default function DashboardPage() {
     const router = useRouter();
-    const [user, setUser] = useState<any>(null);
+    const [username, setUsername] = useState("Developer");
+    const [metrics, setMetrics] = useState<DashboardMetrics>({
+        projects: 0,
+        completedProjects: 0,
+        collaborations: 0,
+        unreadNotifications: 0,
+    });
+    const [recentActivities, setRecentActivities] = useState<ActivityItem[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -27,8 +58,71 @@ export default function DashboardPage() {
                 router.push("/login");
                 return;
             }
-            setUser(session.user);
-            setLoading(false);
+            const currentUser = session.user;
+
+            try {
+                const [
+                    profileResult,
+                    projectsCountResult,
+                    completedProjectsCountResult,
+                    collaborationsCountResult,
+                    recentProjectsResult,
+                ] = await Promise.all([
+                    supabase
+                        .from("profiles")
+                        .select("username, full_name")
+                        .eq("id", currentUser.id)
+                        .maybeSingle(),
+                    supabase
+                        .from("projects")
+                        .select("id", { count: "exact", head: true })
+                        .eq("owner_id", currentUser.id),
+                    supabase
+                        .from("projects")
+                        .select("id", { count: "exact", head: true })
+                        .eq("owner_id", currentUser.id)
+                        .eq("status", "completed"),
+                    supabase
+                        .from("project_members")
+                        .select("id", { count: "exact", head: true })
+                        .eq("user_id", currentUser.id)
+                        .eq("status", "accepted"),
+                    supabase
+                        .from("projects")
+                        .select("id, title, created_at, updated_at")
+                        .eq("owner_id", currentUser.id)
+                        .order("updated_at", { ascending: false })
+                        .limit(4),
+                ]);
+
+                const fallbackUsername =
+                    profileResult.data?.username ||
+                    profileResult.data?.full_name ||
+                    currentUser.user_metadata?.user_name ||
+                    currentUser.email?.split("@")[0] ||
+                    "Developer";
+
+                setUsername(fallbackUsername);
+                setMetrics({
+                    projects: projectsCountResult.count ?? 0,
+                    completedProjects: completedProjectsCountResult.count ?? 0,
+                    collaborations: collaborationsCountResult.count ?? 0,
+                    unreadNotifications: 0,
+                });
+
+                const activities =
+                    recentProjectsResult.data?.map((project: any) => ({
+                        id: project.id,
+                        label: `Updated project: ${project.title || "Untitled Project"}`,
+                        timestamp: project.updated_at || project.created_at || new Date().toISOString(),
+                    })) || [];
+
+                setRecentActivities(activities);
+            } catch (error) {
+                console.error("[Dashboard] Failed to load metrics:", error);
+            } finally {
+                setLoading(false);
+            }
         }
         getUser();
     }, [router]);
@@ -44,16 +138,22 @@ export default function DashboardPage() {
     const dashboardCards = [
         {
             title: "My Projects",
-            description: "You don't have any projects yet.",
-            cta: "Create Project",
-            href: "/projects/create",
+            description:
+                metrics.projects === 0
+                    ? "You don't have any projects yet."
+                    : `${metrics.projects} projects total • ${metrics.completedProjects} completed.`,
+            cta: metrics.projects === 0 ? "Create Project" : "Manage Projects",
+            href: metrics.projects === 0 ? "/projects/create" : "/my-projects",
             icon: FolderKanban,
             borderClass: "hover:border-blue-500/60",
             glowClass: "from-blue-500/20 to-cyan-500/10",
         },
         {
-            title: "My Applications",
-            description: "There are no pending applications.",
+            title: "Collaborations",
+            description:
+                metrics.collaborations === 0
+                    ? "You have no active collaborations yet."
+                    : `You're currently collaborating on ${metrics.collaborations} project(s).`,
             cta: "Browse Projects",
             href: "/projects",
             icon: FilePlus2,
@@ -62,7 +162,10 @@ export default function DashboardPage() {
         },
         {
             title: "Messages",
-            description: "Your inbox is empty.",
+            description:
+                metrics.unreadNotifications > 0
+                    ? `You have ${metrics.unreadNotifications} unread notification(s).`
+                    : "No unread notifications.",
             cta: "View Notifications",
             href: "/notifications",
             icon: MessageSquare,
@@ -71,12 +174,7 @@ export default function DashboardPage() {
         },
     ];
 
-    const breathingTransition = (delay = 0) => ({
-        duration: 4.2,
-        delay,
-        repeat: Infinity,
-        ease: "easeInOut" as const,
-    });
+    const firstName = username.trim().split(/\s+/)[0] || username;
 
     return (
         <div className="min-h-screen flex flex-col bg-slate-950">
@@ -100,9 +198,8 @@ export default function DashboardPage() {
                                         Workspace Overview
                                     </div>
                                     <h1 className="text-3xl md:text-4xl font-bold mb-2">
-                                        <NeonText color="cyan">Welcome</NeonText>
+                                        <NeonText color="cyan">{`Welcome, ${firstName}`}</NeonText>
                                     </h1>
-                                    <p className="text-slate-400">{user?.email}</p>
                                 </div>
                             </div>
                         </Reveal>
@@ -114,8 +211,8 @@ export default function DashboardPage() {
                                     <Reveal key={card.title} delay={index * 0.08}>
                                         <GradientBorder animate className="h-full">
                                             <motion.div
-                                                animate={{ scale: [1, 1.012, 1], opacity: [0.98, 1, 0.98] }}
-                                                transition={breathingTransition(index * 0.12)}
+                                                whileHover={{ scale: 1.012 }}
+                                                transition={{ duration: 0.2, ease: "easeOut" }}
                                                 className={`group h-full rounded-2xl border border-slate-800 bg-slate-900/65 p-6 backdrop-blur-sm transition-colors duration-300 ${card.borderClass}`}
                                             >
                                                 <div className={`mb-5 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${card.glowClass} border border-white/10`}>
@@ -140,11 +237,14 @@ export default function DashboardPage() {
                         </div>
 
                         <Reveal delay={0.18}>
-                            <div className="grid gap-6 lg:grid-cols-2">
+                            <div className="grid gap-6 lg:grid-cols-3">
                                 <div className="rounded-2xl border border-slate-800/80 bg-slate-900/45 backdrop-blur-sm p-6">
-                                    <h2 className="text-lg font-semibold text-white mb-2">Quick Tip</h2>
-                                    <p className="text-slate-400 text-sm leading-relaxed">
-                                        Keep your profile updated and add project details to get better collaboration matches.
+                                    <h2 className="text-lg font-semibold text-white mb-2">Achievements</h2>
+                                    <p className="text-slate-300 text-sm leading-relaxed mb-2">
+                                        Achievement progress: <span className="text-purple-300 font-semibold">0 / 30</span>
+                                    </p>
+                                    <p className="text-xs text-slate-500">
+                                        You have no achievements yet.
                                     </p>
                                 </div>
                                 <div className="rounded-2xl border border-slate-800/80 bg-slate-900/45 backdrop-blur-sm p-6">
@@ -155,9 +255,37 @@ export default function DashboardPage() {
                                     <p className="text-slate-400 text-sm mb-4">
                                         Publish your first project and start receiving applications from developers.
                                     </p>
-                                    <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-500 text-white">
+                                    <Button
+                                        asChild
+                                        size="sm"
+                                        className="group rounded-full px-5 py-2 bg-gradient-to-r from-blue-500 via-purple-500 to-purple-600 hover:from-blue-400 hover:via-purple-400 hover:to-purple-500 hover:shadow-blue-500/30 hover:-translate-y-[1px] text-white font-medium transition-all duration-500 delay-75 ease-out"
+                                    >
                                         <Link href="/projects/create">Create your first project</Link>
                                     </Button>
+                                </div>
+                                <div className="rounded-2xl border border-slate-800/80 bg-slate-900/45 backdrop-blur-sm p-6">
+                                    <h2 className="text-lg font-semibold text-white mb-2">Recent Activity</h2>
+                                    {recentActivities.length === 0 ? (
+                                        <p className="text-slate-400 text-sm leading-relaxed">
+                                            No recent activity yet. Create or update a project to see activity here.
+                                        </p>
+                                    ) : (
+                                        <ul className="space-y-3">
+                                            {recentActivities.map((activity) => (
+                                                <li
+                                                    key={activity.id}
+                                                    className="rounded-lg border border-slate-800/60 bg-slate-900/70 p-3 transition-all duration-200 hover:border-purple-500/40 hover:bg-slate-900/85 hover:shadow-[0_0_16px_rgba(168,85,247,0.2)]"
+                                                >
+                                                    <Link href={`/projects/${activity.id}`} className="block">
+                                                        <p className="text-sm text-slate-200">{activity.label}</p>
+                                                        <p className="text-xs text-slate-500 mt-1">
+                                                            {formatActivityTime(activity.timestamp)}
+                                                        </p>
+                                                    </Link>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
                                 </div>
                             </div>
                         </Reveal>

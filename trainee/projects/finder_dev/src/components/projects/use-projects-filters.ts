@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { KeyboardEvent } from "react";
 import {
   UNIQUE_ROLE_OPTIONS,
@@ -8,10 +8,15 @@ import {
   type StatusFilter,
 } from "./projects-filter-constants";
 
+export type SearchType = "project" | "developer";
+
 export function useProjectsFilters() {
+  const [searchType, setSearchType] = useState<SearchType>("project");
   const [searchInput, setSearchInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [hasSearched, setHasSearched] = useState(false);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [statusTouched, setStatusTouched] = useState(false);
   const [selectedTech, setSelectedTech] = useState<string[]>([]);
   const [selectedRole, setSelectedRole] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
@@ -22,12 +27,14 @@ export function useProjectsFilters() {
 
   const handleSearch = useCallback(() => {
     const trimmedQuery = searchInput.trim();
-    setSearchQuery(trimmedQuery);
+    setHasSearched(true);
+    if (searchType === "project") {
+      setSearchQuery(trimmedQuery);
+    }
     if (showFilters) {
       setShowFilters(false);
     }
-    console.log("ProjectsPage: Search triggered with query:", trimmedQuery);
-  }, [searchInput, showFilters]);
+  }, [searchInput, searchType, showFilters]);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -42,19 +49,17 @@ export function useProjectsFilters() {
   const handleClearSearch = useCallback(() => {
     setSearchInput("");
     setSearchQuery("");
+    setHasSearched(false);
   }, []);
 
   const handleStatusFilter = useCallback((status: StatusFilter) => {
+    setStatusTouched(true);
     setStatusFilter(status);
-    if (status === "all") {
-      setSelectedTech([]);
-      setSelectedRole([]);
-    }
-    setShowFilters(false);
   }, []);
 
   const handleClearFilters = useCallback(() => {
     setStatusFilter("all");
+    setStatusTouched(false);
     setSelectedTech([]);
     setSelectedRole([]);
   }, []);
@@ -94,23 +99,68 @@ export function useProjectsFilters() {
   }, [roleSearchQuery, showAllRoles]);
 
   const hasActiveFilters = useMemo(
-    () => statusFilter !== "all" || selectedTech.length > 0 || selectedRole.length > 0,
-    [statusFilter, selectedRole.length, selectedTech.length]
+    () => statusTouched || selectedTech.length > 0 || selectedRole.length > 0,
+    [selectedRole.length, selectedTech.length, statusTouched]
   );
 
   const activeFilterCount = useMemo(
     () =>
-      [statusFilter !== "all" ? 1 : 0, selectedTech.length, selectedRole.length].reduce(
+      [statusTouched ? 1 : 0, selectedTech.length, selectedRole.length].reduce(
         (sum, count) => sum + count,
         0
       ),
-    [selectedRole.length, selectedTech.length, statusFilter]
+    [selectedRole.length, selectedTech.length, statusTouched]
   );
 
+  const handleSearchTypeChange = useCallback((type: SearchType) => {
+    setSearchType(type);
+    setSearchInput("");
+    setSearchQuery("");
+    setHasSearched(false);
+    setShowFilters(false);
+    setStatusTouched(false);
+  }, []);
+
+  const handleQuickSearch = useCallback(
+    (term: string) => {
+      const trimmed = term.trim();
+      setSearchInput(trimmed);
+      setHasSearched(true);
+      if (searchType === "project") {
+        setSearchQuery(trimmed);
+      }
+    },
+    [searchType]
+  );
+
+  useEffect(() => {
+    if (searchType !== "project") return;
+
+    const trimmedQuery = searchInput.trim();
+    const hasProjectFilters =
+      statusTouched || selectedTech.length > 0 || selectedRole.length > 0;
+
+    const timeoutId = setTimeout(() => {
+      if (!trimmedQuery && !hasProjectFilters) {
+        setSearchQuery("");
+        setHasSearched(false);
+        return;
+      }
+
+      setSearchQuery(trimmedQuery);
+      setHasSearched(true);
+    }, 220);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchInput, searchType, selectedRole.length, selectedTech.length, statusTouched]);
+
   return {
+    hasSearched,
+    searchType,
     searchInput,
     searchQuery,
     statusFilter,
+    statusTouched,
     selectedTech,
     selectedRole,
     showFilters,
@@ -123,12 +173,15 @@ export function useProjectsFilters() {
     hasActiveFilters,
     activeFilterCount,
     setSearchInput,
+    setSearchType,
     setShowFilters,
     setShowAllTech,
     setShowAllRoles,
     setTechSearchQuery,
     setRoleSearchQuery,
     handleSearch,
+    handleSearchTypeChange,
+    handleQuickSearch,
     handleKeyDown,
     handleClearSearch,
     handleStatusFilter,

@@ -191,7 +191,7 @@ export function SmartSearch() {
                                     ) : (
                                         !loading && (
                                             <div className="px-3 py-4 text-center text-slate-500 text-sm">
-                                                Sonuç bulunamadı. Enter'a basarak detaylı arama yapın.
+                                                Sonuç bulunamadı. Enter&apos;a basarak detaylı arama yapın.
                                             </div>
                                         )
                                     )}
@@ -205,7 +205,7 @@ export function SmartSearch() {
                                         </div>
                                         <div className="flex-1 text-left">
                                             <div className="text-sm text-slate-200">
-                                                tüm projelerde ara: <span className="text-blue-400">"{query}"</span>
+                                                tüm projelerde ara: <span className="text-blue-400">&quot;{query}&quot;</span>
                                             </div>
                                         </div>
                                         <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-slate-400 group-hover:-rotate-45 transition-all" />

@@ -6,7 +6,14 @@ import { createErrorResponse, HttpStatus } from "@/lib/utils/errors";
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
-    const query = Object.fromEntries(searchParams.entries());
+    const query = {
+      search: searchParams.get("search") || undefined,
+      status: searchParams.get("status") || undefined,
+      tech: searchParams.get("tech") || undefined,
+      role: searchParams.get("role") || undefined,
+      limit: searchParams.get("limit") || undefined,
+      offset: searchParams.get("offset") || undefined,
+    };
 
     const result = await getProjects(query);
 

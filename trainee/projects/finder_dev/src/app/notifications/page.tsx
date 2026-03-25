@@ -31,7 +31,7 @@ export default function NotificationsPage() {
                                     </div>
                                     <h2 className="text-xl font-semibold text-white mb-2">No notifications yet</h2>
                                     <p className="text-muted-foreground text-center">
-                                        You'll see notifications about your projects, applications, and messages here.
+                                        You&apos;ll see notifications about your projects, applications, and messages here.
                                     </p>
                                 </div>
                             </div>

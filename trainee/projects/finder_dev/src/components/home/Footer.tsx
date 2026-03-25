@@ -8,7 +8,7 @@ import { subscribeNewsletter } from "@/app/actions/newsletter";
 const footerLinks = {
     platform: [
         { label: "Projects", href: "/projects" },
-        { label: "Developers", href: "/developers" },
+        { label: "Find Developers", href: "/projects" },
         { label: "Create Project", href: "/projects/create" },
         { label: "How It Works", href: "/how-it-works" },
     ],

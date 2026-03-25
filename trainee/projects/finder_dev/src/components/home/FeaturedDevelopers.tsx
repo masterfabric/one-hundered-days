@@ -208,7 +208,7 @@ export function FeaturedDevelopers() {
                             whileTap={{ scale: 0.95 }}
                         >
                             <Button asChild variant="outline" size="lg" className="border-purple-500/50 text-purple-400 hover:bg-purple-500/10 px-8 py-6 text-lg">
-                                <Link href="/developers">
+                                <Link href="/projects">
                                     View All Developers
                                     <motion.span
                                         className="ml-2"

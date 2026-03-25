@@ -6,7 +6,7 @@ import * as Sentry from "@sentry/nextjs";
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 
-const notFoundPage = () => {
+const NotFoundPage = () => {
     const pathname = usePathname();
 
     useEffect(() => {
@@ -23,4 +23,4 @@ const notFoundPage = () => {
   )
 }
 
-export default notFoundPage
+export default NotFoundPage

@@ -1,6 +1,6 @@
 "use server";
 
-import { supabaseServer, supabaseAdmin } from "@/lib/supabase/server";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AppError, HttpStatus } from "@/lib/utils/errors";
 import { z } from "zod";
 
@@ -16,8 +16,8 @@ export async function subscribeNewsletter(email: string) {
     // Email validation
     const validatedData = newsletterSchema.parse({ email });
 
-    // Admin client kullan (RLS'yi bypass eder - public newsletter için)
-    const client = supabaseAdmin || supabaseServer;
+    // Server client kullan
+    const client = (await createSupabaseServerClient()) as any;
 
     // Önce bu email zaten kayıtlı mı kontrol et
     const { data: existing } = await client

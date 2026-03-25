@@ -29,6 +29,7 @@ export const updateUserProfileSchema = z.object({
   displayName: z.string().min(2).max(100).optional(),
   bio: z.string().max(1000).optional(),
   avatarUrl: z.string().url().optional().or(z.literal("")),
+  visibility: z.enum(["public", "members_only"]).optional(),
   location: z.string().max(100).optional(),
   skills: z.array(skillSchema).optional(),
   socialLinks: socialLinksSchema.optional(),

@@ -14,8 +14,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { MultiSelectPopover } from "@/components/ui/multi-select-popover";
-import { motion } from "framer-motion";
 import { Check, ChevronDown } from "lucide-react";
+import { ToastHelper } from "@/lib/toastHelper";
 
 type ProjectStatus =
   | "idea"
@@ -44,7 +44,6 @@ export default function CreateProjectPage() {
   const [githubUrl, setGithubUrl] = useState("");
   const [liveUrl, setLiveUrl] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [openSidebar, setOpenSidebar] = useState<"technologies" | "roles" | null>(null);
 
   const selectedStatusLabel =
@@ -124,10 +123,12 @@ export default function CreateProjectPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError(null);
 
     if (!title || !description) {
-      setError("Title and description are required.");
+      ToastHelper.validation(
+        "Missing required fields",
+        "Please fill in both project title and description."
+      );
       return;
     }
 
@@ -175,15 +176,29 @@ export default function CreateProjectPage() {
 
       if (!res.ok) {
         const data = await res.json().catch(() => null);
-        throw new Error(data?.message || "Failed to create project");
+        const errorMessage = data?.message || "Failed to create project.";
+        throw new Error(errorMessage);
       }
 
+      ToastHelper.show("Project created successfully!", {
+        type: "success",
+        description: "Your project is now listed and visible to collaborators.",
+        position: "top-right",
+      });
       router.push("/projects");
       router.refresh();
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "An error occurred while creating the project."
-      );
+      const errorMessage =
+        err instanceof Error ? err.message : "An error occurred while creating the project.";
+
+      ToastHelper.show("Project creation failed", {
+        type: "error",
+        description:
+          errorMessage.toLowerCase().includes("no user")
+            ? `${errorMessage} Please log out and sign in again.`
+            : errorMessage,
+        position: "top-right",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -341,23 +356,6 @@ export default function CreateProjectPage() {
                     className="w-full py-4 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 outline-none transition-all duration-200 ease-out text-white placeholder:text-white/40"
                   />
                 </div>
-
-                {error && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="rounded-xl bg-red-500/10 border border-red-500/30 p-4 text-sm text-red-400"
-                  >
-                    <p className="font-semibold mb-1">Error creating project</p>
-                    <p>{error}</p>
-                    {error.toLowerCase().includes("no user") && (
-                      <p className="mt-2 text-red-300">
-                        You need to set up your profile first.{" "}
-                        Please contact support or try logging out and back in.
-                      </p>
-                    )}
-                  </motion.div>
-                )}
 
                 <div className="flex gap-4 pt-4">
                   <Button

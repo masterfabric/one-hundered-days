@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
 
-type ProfileRow = {
-  username: string | null;
-  full_name: string | null;
-  avatar_url: string | null;
+type ProfileRow = Record<string, unknown> & {
+  username?: string | null;
+  full_name?: string | null;
+  avatar_url?: string | null;
   about?: string | null;
   bio?: string | null;
   github_url?: string | null;
@@ -21,13 +21,26 @@ export default async function ProfilePage() {
   const user = authData.user;
 
   let profileRow: ProfileRow | null = null;
+  let projectsCount = 0;
+  let collaborationsCount = 0;
+
   if (user?.id) {
-    const { data } = await supabase
-      .from("profiles")
-      .select("full_name, username, avatar_url, about, bio, github_url, linkedin_url")
-      .eq("id", user.id)
-      .maybeSingle();
-    profileRow = (data as ProfileRow | null) ?? null;
+    const [profileResult, projectsResult, collaborationsResult] = await Promise.all([
+      supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
+      supabase
+        .from("projects")
+        .select("id", { count: "exact", head: true })
+        .eq("owner_id", user.id),
+      supabase
+        .from("project_members")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .eq("status", "accepted"),
+    ]);
+
+    profileRow = (profileResult.data as ProfileRow | null) ?? null;
+    projectsCount = projectsResult.count ?? 0;
+    collaborationsCount = collaborationsResult.count ?? 0;
   }
 
   const fallbackUsername =
@@ -54,6 +67,17 @@ export default async function ProfilePage() {
     github_url: profileRow?.github_url || "https://github.com",
     linkedin_url: profileRow?.linkedin_url || "https://linkedin.com",
   };
+
+  const rawAchievementsValue =
+    profileRow?.achievement_count ??
+    profileRow?.achievements_count ??
+    profileRow?.achievements;
+  const achievementsCount =
+    typeof rawAchievementsValue === "number"
+      ? rawAchievementsValue
+      : typeof rawAchievementsValue === "string"
+      ? Number.parseInt(rawAchievementsValue, 10) || 0
+      : 0;
 
   const isEmoji =
     profile.avatar_url?.startsWith("👨") ||
@@ -154,15 +178,15 @@ export default async function ProfilePage() {
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-6 border-t border-slate-800/50">
                     <div className="text-center">
-                      <p className="text-2xl font-bold text-blue-400">-</p>
+                      <p className="text-2xl font-bold text-blue-400">{projectsCount}</p>
                       <p className="text-sm text-slate-400 mt-1">Projects</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-2xl font-bold text-purple-400">-</p>
+                      <p className="text-2xl font-bold text-purple-400">{collaborationsCount}</p>
                       <p className="text-sm text-slate-400 mt-1">Collaborations</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-2xl font-bold text-green-400">-</p>
+                      <p className="text-2xl font-bold text-green-400">{achievementsCount}</p>
                       <p className="text-sm text-slate-400 mt-1">Achievements</p>
                     </div>
                   </div>
