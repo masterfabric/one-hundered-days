@@ -346,6 +346,57 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 
 	/// en: 'Anaphylaxis: Life-threatening. Call 112 immediately!'
 	String get allergyTrackerSeverityAnaphylaxisDesc => 'Anaphylaxis: Life-threatening. Call 112 immediately!';
+
+	/// en: 'Recipe Engine'
+	String get homeFeatureRecipe => 'Recipe Engine';
+
+	/// en: 'Generate personalised baby recipes'
+	String get homeFeatureRecipeDesc => 'Generate personalised baby recipes';
+
+	/// en: 'Recipe Engine'
+	String get recipeEngineTitle => 'Recipe Engine';
+
+	/// en: 'What\'s in my pantry?'
+	String get recipeEngineMode1Label => 'What\'s in my pantry?';
+
+	/// en: 'What should we eat?'
+	String get recipeEngineMode2Label => 'What should we eat?';
+
+	/// en: 'Generate recipes from your pantry ingredients.'
+	String get recipeEngineMode1Desc => 'Generate recipes from your pantry ingredients.';
+
+	/// en: 'Get recommendations to fill today\'s nutritional gaps.'
+	String get recipeEngineMode2Desc => 'Get recommendations to fill today\'s nutritional gaps.';
+
+	/// en: 'Select ingredients from your pantry'
+	String get recipeEngineSelectIngredients => 'Select ingredients from your pantry';
+
+	/// en: 'Your pantry is empty. Add ingredients first.'
+	String get recipeEngineNoPantryItems => 'Your pantry is empty. Add ingredients first.';
+
+	/// en: 'Today\'s nutrient progress'
+	String get recipeEngineNutrientGaps => 'Today\'s nutrient progress';
+
+	/// en: 'Generate Recipes'
+	String get recipeEngineGenerate => 'Generate Recipes';
+
+	/// en: 'Generating…'
+	String get recipeEngineGenerating => 'Generating…';
+
+	/// en: 'Suggested Recipes'
+	String get recipeEngineResults => 'Suggested Recipes';
+
+	/// en: 'No safe recipes found for selected ingredients.'
+	String get recipeEngineNoRecipes => 'No safe recipes found for selected ingredients.';
+
+	/// en: 'min'
+	String get recipeEnginePrepTime => 'min';
+
+	/// en: 'kcal'
+	String get recipeEngineCalories => 'kcal';
+
+	/// en: 'Sensory Tips'
+	String get recipeEngineSensoryTips => 'Sensory Tips';
 }
 
 /// The flat map containing all translations for locale <en>.
@@ -458,6 +509,23 @@ extension on Translations {
 			'allergyTrackerSeverityModerateDesc' => 'Moderate: Hives, vomiting, abdominal pain',
 			'allergyTrackerSeveritySevereDesc' => 'Severe: Widespread hives, breathing difficulty, swelling',
 			'allergyTrackerSeverityAnaphylaxisDesc' => 'Anaphylaxis: Life-threatening. Call 112 immediately!',
+			'homeFeatureRecipe' => 'Recipe Engine',
+			'homeFeatureRecipeDesc' => 'Generate personalised baby recipes',
+			'recipeEngineTitle' => 'Recipe Engine',
+			'recipeEngineMode1Label' => 'What\'s in my pantry?',
+			'recipeEngineMode2Label' => 'What should we eat?',
+			'recipeEngineMode1Desc' => 'Generate recipes from your pantry ingredients.',
+			'recipeEngineMode2Desc' => 'Get recommendations to fill today\'s nutritional gaps.',
+			'recipeEngineSelectIngredients' => 'Select ingredients from your pantry',
+			'recipeEngineNoPantryItems' => 'Your pantry is empty. Add ingredients first.',
+			'recipeEngineNutrientGaps' => 'Today\'s nutrient progress',
+			'recipeEngineGenerate' => 'Generate Recipes',
+			'recipeEngineGenerating' => 'Generating…',
+			'recipeEngineResults' => 'Suggested Recipes',
+			'recipeEngineNoRecipes' => 'No safe recipes found for selected ingredients.',
+			'recipeEnginePrepTime' => 'min',
+			'recipeEngineCalories' => 'kcal',
+			'recipeEngineSensoryTips' => 'Sensory Tips',
 			_ => null,
 		};
 	}

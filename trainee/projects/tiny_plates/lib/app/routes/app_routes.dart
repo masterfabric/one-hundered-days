@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:masterfabric_core/masterfabric_core.dart';
 import 'package:tiny_plates/app/views/view_allergy_tracker/allergy_tracker_view.dart';
+import 'package:tiny_plates/app/views/view_recipe/recipe_view.dart';
 import 'package:tiny_plates/app/views/view_dashboard/dashboard_shell.dart';
 import 'package:tiny_plates/app/views/view_diary/diary_view.dart';
 import 'package:tiny_plates/app/views/view_home/home_view.dart';
@@ -96,6 +97,17 @@ final GoRouter appRouter = GoRouter(
         return AllergyTrackerView(
           goRoute: (String path) => context.go(path),
           arguments: const {'view': 'allergyTracker'},
+        );
+      },
+    ),
+
+    /// Recipe engine – outside dashboard shell (full screen).
+    GoRoute(
+      path: '/recipe-engine',
+      builder: (BuildContext context, GoRouterState state) {
+        return RecipeView(
+          goRoute: (String path) => context.go(path),
+          arguments: const {'view': 'recipeEngine'},
         );
       },
     ),

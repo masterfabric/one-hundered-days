@@ -195,6 +195,10 @@
     "search_enabled": true,
     "show_empty_banner": true
   },
+  "recipe_configuration": {
+    "show_mode_selector": true,
+    "max_recipes_shown": 6
+  },
   "features": {
     "calorieTracking": true
   },
