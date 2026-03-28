@@ -20,6 +20,9 @@ type DashboardMetrics = {
     completedProjects: number;
     collaborations: number;
     unreadNotifications: number;
+    xpTotal: number;
+    level: number;
+    achievements: number;
 };
 
 type ActivityItem = {
@@ -47,6 +50,9 @@ export default function DashboardPage() {
         completedProjects: 0,
         collaborations: 0,
         unreadNotifications: 0,
+        xpTotal: 0,
+        level: 1,
+        achievements: 0,
     });
     const [recentActivities, setRecentActivities] = useState<ActivityItem[]>([]);
     const [loading, setLoading] = useState(true);
@@ -67,6 +73,8 @@ export default function DashboardPage() {
                     completedProjectsCountResult,
                     collaborationsCountResult,
                     recentProjectsResult,
+                    progressResult,
+                    achievementsResult,
                 ] = await Promise.all([
                     supabase
                         .from("profiles")
@@ -93,6 +101,15 @@ export default function DashboardPage() {
                         .eq("owner_id", currentUser.id)
                         .order("updated_at", { ascending: false })
                         .limit(4),
+                    supabase
+                        .from("user_progress")
+                        .select("xp_total, level")
+                        .eq("user_id", currentUser.id)
+                        .maybeSingle(),
+                    supabase
+                        .from("user_achievements")
+                        .select("id", { count: "exact", head: true })
+                        .eq("user_id", currentUser.id),
                 ]);
 
                 const fallbackUsername =
@@ -108,6 +125,9 @@ export default function DashboardPage() {
                     completedProjects: completedProjectsCountResult.count ?? 0,
                     collaborations: collaborationsCountResult.count ?? 0,
                     unreadNotifications: 0,
+                    xpTotal: Number(progressResult.data?.xp_total ?? 0),
+                    level: Number(progressResult.data?.level ?? 1),
+                    achievements: achievementsResult.count ?? 0,
                 });
 
                 const activities =
@@ -238,15 +258,20 @@ export default function DashboardPage() {
 
                         <Reveal delay={0.18}>
                             <div className="grid gap-6 lg:grid-cols-3">
-                                <div className="rounded-2xl border border-slate-800/80 bg-slate-900/45 backdrop-blur-sm p-6">
+                                <Link
+                                    href="/profile/achievements"
+                                    className="rounded-2xl border border-slate-800/80 bg-slate-900/45 backdrop-blur-sm p-6 block transition-all duration-200 hover:border-cyan-500/40 hover:bg-slate-900/65 hover:shadow-[0_0_18px_rgba(34,211,238,0.18)]"
+                                >
                                     <h2 className="text-lg font-semibold text-white mb-2">Achievements</h2>
                                     <p className="text-slate-300 text-sm leading-relaxed mb-2">
-                                        Achievement progress: <span className="text-purple-300 font-semibold">0 / 30</span>
+                                        Level: <span className="text-cyan-300 font-semibold">{metrics.level}</span> • XP:{" "}
+                                        <span className="text-purple-300 font-semibold">{metrics.xpTotal}</span>
                                     </p>
-                                    <p className="text-xs text-slate-500">
-                                        You have no achievements yet.
+                                    <p className="text-xs text-slate-500 mb-3">
+                                        Total unlocked achievements: {metrics.achievements}
                                     </p>
-                                </div>
+                                    <p className="text-xs text-cyan-300 font-medium">Open achievements →</p>
+                                </Link>
                                 <div className="rounded-2xl border border-slate-800/80 bg-slate-900/45 backdrop-blur-sm p-6">
                                     <div className="flex items-center gap-2 mb-2 text-cyan-300">
                                         <Compass className="h-4 w-4" />

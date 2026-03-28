@@ -71,6 +71,8 @@ export default function SettingsPage() {
 
             if (error) throw error;
 
+            await fetch("/api/growth/profile-complete", { method: "POST" }).catch(() => null);
+
             ToastHelper.show("Profile settings updated", {
                 type: "success",
                 description: "Display name and bio saved successfully.",
@@ -100,6 +102,8 @@ export default function SettingsPage() {
                 .eq("id", userId);
 
             if (error) throw error;
+
+            await fetch("/api/growth/profile-complete", { method: "POST" }).catch(() => null);
 
             ToastHelper.show("Profile visibility updated", {
                 type: "success",
@@ -217,6 +221,8 @@ export default function SettingsPage() {
                                         </Button>
                                     </div>
                                 </div>
+
+                                {/* Premium membership panel intentionally hidden for now. */}
                             </div>
                         </div>
                     </div>

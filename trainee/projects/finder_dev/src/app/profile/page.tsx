@@ -1,6 +1,6 @@
 import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
-import { Github, Linkedin, Edit, Camera } from "lucide-react";
+import { Github, Linkedin, Edit, Camera, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
@@ -23,9 +23,12 @@ export default async function ProfilePage() {
   let profileRow: ProfileRow | null = null;
   let projectsCount = 0;
   let collaborationsCount = 0;
+  let achievementsCount = 0;
+  let level = 1;
+  let xpTotal = 0;
 
   if (user?.id) {
-    const [profileResult, projectsResult, collaborationsResult] = await Promise.all([
+    const [profileResult, projectsResult, collaborationsResult, progressResult, achievementsResult] = await Promise.all([
       supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
       supabase
         .from("projects")
@@ -36,11 +39,23 @@ export default async function ProfilePage() {
         .select("id", { count: "exact", head: true })
         .eq("user_id", user.id)
         .eq("status", "accepted"),
+      supabase
+        .from("user_progress")
+        .select("xp_total, level")
+        .eq("user_id", user.id)
+        .maybeSingle(),
+      supabase
+        .from("user_achievements")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id),
     ]);
 
     profileRow = (profileResult.data as ProfileRow | null) ?? null;
     projectsCount = projectsResult.count ?? 0;
     collaborationsCount = collaborationsResult.count ?? 0;
+    achievementsCount = achievementsResult.count ?? 0;
+    level = Number((progressResult.data as any)?.level ?? 1);
+    xpTotal = Number((progressResult.data as any)?.xp_total ?? 0);
   }
 
   const fallbackUsername =
@@ -69,22 +84,17 @@ export default async function ProfilePage() {
     linkedin_url: profileRow?.linkedin_url || "https://linkedin.com",
   };
 
-  const rawAchievementsValue =
-    profileRow?.achievement_count ??
-    profileRow?.achievements_count ??
-    profileRow?.achievements;
-  const achievementsCount =
-    typeof rawAchievementsValue === "number"
-      ? rawAchievementsValue
-      : typeof rawAchievementsValue === "string"
-      ? Number.parseInt(rawAchievementsValue, 10) || 0
-      : 0;
-
   const isEmoji =
     profile.avatar_url?.startsWith("👨") ||
     profile.avatar_url?.startsWith("👩") ||
     profile.avatar_url?.startsWith("🧑") ||
     false;
+  const currentLevelBaseXp = Math.max((level - 1) * 100, 0);
+  const nextLevelBaseXp = level * 100;
+  const levelProgressPercent = Math.min(
+    100,
+    Math.max(0, ((xpTotal - currentLevelBaseXp) / Math.max(nextLevelBaseXp - currentLevelBaseXp, 1)) * 100)
+  );
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-950">
@@ -134,6 +144,10 @@ export default async function ProfilePage() {
                       {profile.full_name || profile.username}
                     </h2>
                     <p className="text-muted-foreground">{profile.identity}</p>
+                    <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-violet-400/35 bg-violet-500/15 px-3 py-1">
+                      <span className="text-[11px] uppercase tracking-wider text-violet-200">Level</span>
+                      <span className="text-sm font-bold text-white">{level}</span>
+                    </div>
 
                     {(profile.github_url || profile.linkedin_url) && (
                       <div className="flex gap-4 mt-4">
@@ -183,12 +197,42 @@ export default async function ProfilePage() {
                       <p className="text-sm text-slate-400 mt-1">Projects</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-2xl font-bold text-purple-400">{collaborationsCount}</p>
-                      <p className="text-sm text-slate-400 mt-1">Collaborations</p>
+                      <p className="text-2xl font-bold text-purple-400">{level}</p>
+                      <p className="text-sm text-slate-400 mt-1">Level</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-2xl font-bold text-green-400">{achievementsCount}</p>
-                      <p className="text-sm text-slate-400 mt-1">Achievements</p>
+                      <p className="text-2xl font-bold text-green-400">{xpTotal}</p>
+                      <p className="text-sm text-slate-400 mt-1">XP</p>
+                    </div>
+                  </div>
+                  <div className="mt-4 rounded-lg border border-slate-800/60 bg-slate-900/60 p-3 text-center">
+                    <p className="text-sm text-slate-300">
+                      Unlocked achievements: <span className="text-cyan-300 font-semibold">{achievementsCount}</span>
+                    </p>
+                    <div className="mt-3">
+                      <Button
+                        asChild
+                        variant="outline"
+                        size="sm"
+                        className="rounded-full border-cyan-500/30 bg-cyan-500/10 text-cyan-200 hover:bg-cyan-500/20 hover:text-white"
+                      >
+                        <Link href="/profile/achievements">
+                          <Trophy className="h-4 w-4 mr-1.5" />
+                          View Achievements
+                        </Link>
+                      </Button>
+                    </div>
+                    <div className="mt-3">
+                      <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
+                        <span>Level {level}</span>
+                        <span>Level {level + 1}</span>
+                      </div>
+                      <div className="h-2 rounded-full bg-slate-800">
+                        <div
+                          className="h-2 rounded-full bg-gradient-to-r from-cyan-500 via-blue-500 to-violet-500"
+                          style={{ width: `${levelProgressPercent}%` }}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>

@@ -224,7 +224,7 @@ export function Header() {
                   <Link href="/profile">
                     <motion.div
                       className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity px-2 py-1 rounded-lg hover:bg-slate-800/30"
-                      whileHover={{ scale: 1.05 }}
+                      whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.95 }}
                     >
                       <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center overflow-hidden border-2 border-slate-700 shadow-lg">
@@ -265,7 +265,7 @@ export function Header() {
                   </Link>
 
                   <Link href="/register">
-                    <Button size="sm" className="bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-600/20">
+                    <Button size="sm" className="bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-600/20 text-white hover:text-white">
                       Sign Up
                     </Button>
                   </Link>

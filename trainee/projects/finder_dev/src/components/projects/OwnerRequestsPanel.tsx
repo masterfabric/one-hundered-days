@@ -41,6 +41,7 @@ export function OwnerRequestsPanel({ projectId, initialRequests }: OwnerRequests
           type: "error",
           description: payload?.message || "Could not update request status.",
           position: "top-right",
+          duration: 2000,
         });
         return;
       }
@@ -50,12 +51,14 @@ export function OwnerRequestsPanel({ projectId, initialRequests }: OwnerRequests
         type: "success",
         description: "Request list is updated.",
         position: "top-right",
+        duration: 2000,
       });
     } catch {
       ToastHelper.show("Request update failed", {
         type: "error",
         description: "Unexpected error while updating request.",
         position: "top-right",
+        duration: 2000,
       });
     } finally {
       setLoadingId(null);

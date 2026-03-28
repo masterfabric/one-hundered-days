@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { HttpStatus } from "@/lib/utils/errors";
+import { grantXpForEvent } from "@/lib/growth/progress";
+import { canReviewRequests } from "@/lib/permissions/project-permissions";
 
 const reviewSchema = z.object({
   status: z.enum(["accepted", "rejected"]),
@@ -62,9 +64,12 @@ export async function PATCH(
       );
     }
 
-    if (!projectRow || projectRow.owner_id !== user.id) {
+    const permitted = projectRow?.id
+      ? await canReviewRequests(user.id, projectRow.id)
+      : false;
+    if (!projectRow || !permitted) {
       return NextResponse.json(
-        { success: false, message: "Only project owner can review requests." },
+        { success: false, message: "Only project owner or co-leader can review requests." },
         { status: HttpStatus.FORBIDDEN }
       );
     }
@@ -109,6 +114,9 @@ export async function PATCH(
           .from("project_members")
           .update({
             status: "accepted",
+            team_role: "member",
+            granted_by: user.id,
+            granted_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
           })
           .eq("id", existingMember.id);
@@ -125,6 +133,9 @@ export async function PATCH(
           user_id: updatedRow.requester_id,
           role_title: "Contributor",
           status: "accepted",
+          team_role: "member",
+          granted_by: user.id,
+          granted_at: new Date().toISOString(),
         });
 
         if (memberInsertError) {
@@ -133,6 +144,17 @@ export async function PATCH(
             { status: HttpStatus.INTERNAL_SERVER_ERROR }
           );
         }
+      }
+
+      const growthResult = await grantXpForEvent({
+        userId: updatedRow.requester_id,
+        eventCode: "request_accepted_as_member",
+        sourceId: String(requestRow.id),
+        projectId: String(requestRow.project_id),
+        client,
+      });
+      if (!growthResult.success) {
+        console.error("[growth] request_accepted_as_member event failed:", growthResult);
       }
     }
 

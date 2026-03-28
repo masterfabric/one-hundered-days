@@ -291,7 +291,7 @@ export default function CreateProjectPage() {
         type: "success",
         description: "Your project is now listed and visible to collaborators.",
         position: "top-right",
-        duration: 2200,
+        duration: 2000,
       });
       router.push("/projects");
       router.refresh();
@@ -306,7 +306,7 @@ export default function CreateProjectPage() {
             ? `${errorMessage} Please log out and sign in again.`
             : errorMessage,
         position: "top-right",
-        duration: 3200,
+        duration: 2000,
       });
     } finally {
       setIsSubmitting(false);

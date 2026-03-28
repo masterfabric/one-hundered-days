@@ -182,6 +182,9 @@ export interface Database {
           user_id: string | null;
           role_title: string | null;
           status: string; // member_status enum
+          team_role: string;
+          granted_by: string | null;
+          granted_at: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -191,6 +194,9 @@ export interface Database {
           user_id?: string | null;
           role_title?: string | null;
           status?: string;
+          team_role?: string;
+          granted_by?: string | null;
+          granted_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -200,8 +206,223 @@ export interface Database {
           user_id?: string | null;
           role_title?: string | null;
           status?: string;
+          team_role?: string;
+          granted_by?: string | null;
+          granted_at?: string | null;
           created_at?: string;
           updated_at?: string;
+        };
+      };
+      achievement_definitions: {
+        Row: {
+          id: string;
+          code: string;
+          title: string;
+          description: string;
+          category: string;
+          xp_reward: number;
+          is_repeatable: boolean;
+          is_visible: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          code: string;
+          title: string;
+          description: string;
+          category?: string;
+          xp_reward?: number;
+          is_repeatable?: boolean;
+          is_visible?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          code?: string;
+          title?: string;
+          description?: string;
+          category?: string;
+          xp_reward?: number;
+          is_repeatable?: boolean;
+          is_visible?: boolean;
+          created_at?: string;
+        };
+      };
+      user_progress: {
+        Row: {
+          user_id: string;
+          xp_total: number;
+          level: number;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          xp_total?: number;
+          level?: number;
+          updated_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          xp_total?: number;
+          level?: number;
+          updated_at?: string;
+        };
+      };
+      progress_events: {
+        Row: {
+          id: string;
+          user_id: string;
+          event_code: string;
+          xp_delta: number;
+          project_id: string | null;
+          source_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          event_code: string;
+          xp_delta?: number;
+          project_id?: string | null;
+          source_id?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          event_code?: string;
+          xp_delta?: number;
+          project_id?: string | null;
+          source_id?: string;
+          created_at?: string;
+        };
+      };
+      user_achievements: {
+        Row: {
+          id: string;
+          user_id: string;
+          achievement_id: string;
+          project_id: string | null;
+          earned_at: string;
+          meta: Json;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          achievement_id: string;
+          project_id?: string | null;
+          earned_at?: string;
+          meta?: Json;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          achievement_id?: string;
+          project_id?: string | null;
+          earned_at?: string;
+          meta?: Json;
+        };
+      };
+      subscription_plans: {
+        Row: {
+          id: string;
+          code: string;
+          name: string;
+          price_monthly: number;
+          currency: string;
+          project_limit: number;
+          advanced_filters: boolean;
+          priority_visibility: boolean;
+          analytics_enabled: boolean;
+          is_active: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          code: string;
+          name: string;
+          price_monthly?: number;
+          currency?: string;
+          project_limit?: number;
+          advanced_filters?: boolean;
+          priority_visibility?: boolean;
+          analytics_enabled?: boolean;
+          is_active?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          code?: string;
+          name?: string;
+          price_monthly?: number;
+          currency?: string;
+          project_limit?: number;
+          advanced_filters?: boolean;
+          priority_visibility?: boolean;
+          analytics_enabled?: boolean;
+          is_active?: boolean;
+          created_at?: string;
+        };
+      };
+      user_subscriptions: {
+        Row: {
+          id: string;
+          user_id: string;
+          plan_id: string;
+          provider: string;
+          provider_subscription_id: string | null;
+          status: string;
+          current_period_end: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          plan_id: string;
+          provider?: string;
+          provider_subscription_id?: string | null;
+          status?: string;
+          current_period_end?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          plan_id?: string;
+          provider?: string;
+          provider_subscription_id?: string | null;
+          status?: string;
+          current_period_end?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      billing_events: {
+        Row: {
+          id: string;
+          provider: string;
+          provider_event_id: string;
+          payload: Json;
+          processed_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          provider: string;
+          provider_event_id: string;
+          payload: Json;
+          processed_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          provider?: string;
+          provider_event_id?: string;
+          payload?: Json;
+          processed_at?: string | null;
+          created_at?: string;
         };
       };
       conversations: {

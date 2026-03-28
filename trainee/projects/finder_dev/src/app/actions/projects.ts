@@ -12,6 +12,7 @@ import {
   supabaseAdmin,
   createSupabaseServerClient,
 } from "@/lib/supabase/server";
+import { grantXpForEvent } from "@/lib/growth/progress";
 import { revalidatePath } from "next/cache";
 
 // Define types for the raw Supabase response to fix "never" type errors
@@ -215,6 +216,9 @@ export async function createProject(input: CreateProjectInput) {
     // Regular client kullan (RLS politikaları authenticated kullanıcıya göre çalışsın)
     const client = supabaseServer;
 
+    // Premium feature-gate (project limit) is intentionally disabled for now.
+    // We'll re-enable this block when premium billing rollout starts.
+
     const techStackFromCsv =
       typeof rawInput.techStackText === "string"
         ? rawInput.techStackText
@@ -341,6 +345,19 @@ export async function createProject(input: CreateProjectInput) {
       );
     }
 
+    if (data?.id) {
+      const growthResult = await grantXpForEvent({
+        userId: user.id,
+        eventCode: "project_created",
+        sourceId: String(data.id),
+        projectId: String(data.id),
+        client: authClient as any,
+      });
+      if (!growthResult.success) {
+        console.error("[growth] project_created event failed:", growthResult);
+      }
+    }
+
     return { success: true, data };
   } catch (error) {
     if (error instanceof AppError) {
@@ -360,6 +377,42 @@ export async function updateProject(input: UpdateProjectInput) {
   try {
     const validatedData = updateProjectSchema.parse(input);
     const { id, ...updateData } = validatedData;
+    const authClient = await createSupabaseServerClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await authClient.auth.getUser();
+
+    if (authError || !user) {
+      throw new AppError(
+        "You must be signed in to perform this action.",
+        HttpStatus.UNAUTHORIZED
+      );
+    }
+
+    const { data: projectRow, error: projectReadError } = await supabaseServer
+      .from("projects")
+      .select("id, owner_id, created_at, status")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (projectReadError) {
+      throw new AppError(
+        `Failed to validate project ownership: ${projectReadError.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+
+    if (!projectRow) {
+      throw new AppError("Project not found", HttpStatus.NOT_FOUND);
+    }
+
+    if (projectRow.owner_id !== user.id) {
+      throw new AppError(
+        "Only the project owner can update this project.",
+        HttpStatus.FORBIDDEN
+      );
+    }
 
     const updatePayload: Record<string, unknown> = {};
 
@@ -377,7 +430,48 @@ export async function updateProject(input: UpdateProjectInput) {
     }
     */
 
+    // Anti-farming guard: completion requires maturity + real collaboration.
+    if (
+      updateData.status === "completed" &&
+      String(projectRow.status || "").toLowerCase() !== "completed"
+    ) {
+      const createdAt = new Date(projectRow.created_at);
+      const now = new Date();
+      const ageMs = now.getTime() - createdAt.getTime();
+      const minimumAgeMs = 24 * 60 * 60 * 1000; // 24 hours
+      if (!Number.isFinite(ageMs) || ageMs < minimumAgeMs) {
+        throw new AppError(
+          "Project can be marked completed only after 24 hours from creation.",
+          HttpStatus.BAD_REQUEST
+        );
+      }
+
+      const { count: acceptedCollaboratorCount, error: memberCheckError } = await supabaseServer
+        .from("project_members")
+        .select("id", { count: "exact", head: true })
+        .eq("project_id", id)
+        .eq("status", "accepted")
+        .neq("user_id", user.id);
+
+      if (memberCheckError) {
+        throw new AppError(
+          `Failed to validate collaborators: ${memberCheckError.message}`,
+          HttpStatus.INTERNAL_SERVER_ERROR
+        );
+      }
+
+      if (!acceptedCollaboratorCount || acceptedCollaboratorCount < 1) {
+        throw new AppError(
+          "To mark completed, at least one accepted collaborator is required.",
+          HttpStatus.BAD_REQUEST
+        );
+      }
+    }
+
     updatePayload.updated_at = new Date().toISOString();
+
+    const wasCompletedBefore = String(projectRow.status || "").toLowerCase() === "completed";
+    const willBeCompleted = String(updateData.status || "").toLowerCase() === "completed";
 
     const { data, error } = await supabaseServer
       .from("projects")
@@ -401,6 +495,20 @@ export async function updateProject(input: UpdateProjectInput) {
     revalidatePath("/");
     revalidatePath("/projects");
     revalidatePath(`/projects/${id}`);
+
+    if (!wasCompletedBefore && willBeCompleted) {
+      const growthResult = await grantXpForEvent({
+        userId: user.id,
+        eventCode: "project_completed_as_owner",
+        sourceId: id,
+        projectId: id,
+        client: authClient as any,
+      });
+      if (!growthResult.success) {
+        console.error("[growth] project_completed_as_owner event failed:", growthResult);
+      }
+    }
+
     return { success: true, data };
   } catch (error) {
     if (error instanceof AppError) {
@@ -418,6 +526,43 @@ export async function updateProject(input: UpdateProjectInput) {
  */
 export async function deleteProject(projectId: string) {
   try {
+    const authClient = await createSupabaseServerClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await authClient.auth.getUser();
+
+    if (authError || !user) {
+      throw new AppError(
+        "You must be signed in to perform this action.",
+        HttpStatus.UNAUTHORIZED
+      );
+    }
+
+    const { data: projectRow, error: projectReadError } = await supabaseServer
+      .from("projects")
+      .select("id, owner_id")
+      .eq("id", projectId)
+      .maybeSingle();
+
+    if (projectReadError) {
+      throw new AppError(
+        `Failed to validate project ownership: ${projectReadError.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+
+    if (!projectRow) {
+      throw new AppError("Project not found", HttpStatus.NOT_FOUND);
+    }
+
+    if (projectRow.owner_id !== user.id) {
+      throw new AppError(
+        "Only the project owner can delete this project.",
+        HttpStatus.FORBIDDEN
+      );
+    }
+
     const { error } = await supabaseServer
       .from("projects")
       .delete()

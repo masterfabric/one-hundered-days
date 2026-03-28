@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { HttpStatus } from "@/lib/utils/errors";
+import { grantXpForEvent } from "@/lib/growth/progress";
 
 const createProjectRequestSchema = z.object({
   projectId: z.string().uuid(),
@@ -75,6 +76,19 @@ export async function POST(request: NextRequest) {
         { success: false, message: `Failed to create request: ${error.message}` },
         { status: HttpStatus.INTERNAL_SERVER_ERROR }
       );
+    }
+
+    if (data?.id) {
+      const growthResult = await grantXpForEvent({
+        userId: user.id,
+        eventCode: "request_sent",
+        sourceId: String(data.id),
+        projectId: payload.projectId,
+        client,
+      });
+      if (!growthResult.success) {
+        console.error("[growth] request_sent event failed:", growthResult);
+      }
     }
 
     return NextResponse.json(

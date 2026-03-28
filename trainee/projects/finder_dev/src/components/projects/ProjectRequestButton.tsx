@@ -40,6 +40,7 @@ export function ProjectRequestButton({ projectId, initialStatus }: ProjectReques
           type: "error",
           description: errorMessage,
           position: "top-right",
+          duration: 2000,
         });
         return;
       }
@@ -49,12 +50,14 @@ export function ProjectRequestButton({ projectId, initialStatus }: ProjectReques
         type: "success",
         description: "Project owner can now review your request.",
         position: "top-right",
+        duration: 2000,
       });
     } catch {
       ToastHelper.show("Request failed", {
         type: "error",
         description: "Unexpected error while sending join request.",
         position: "top-right",
+        duration: 2000,
       });
     } finally {
       setIsLoading(false);

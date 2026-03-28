@@ -9,6 +9,8 @@ import { getProjectById } from "@/app/actions/projects";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { ProjectRequestButton } from "@/components/projects/ProjectRequestButton";
 import { OwnerRequestsPanel } from "@/components/projects/OwnerRequestsPanel";
+import { OwnerProjectActions } from "@/components/projects/OwnerProjectActions";
+import { TeamRoleManager } from "@/components/projects/TeamRoleManager";
 
 type ProjectDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -84,7 +86,9 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
   const ownerName = owner?.full_name || owner?.username || "Unknown user";
   const ownerUsername = owner?.username ? `@${owner.username}` : "";
   const ownerAvatar = owner?.avatar_url;
-  const rawTeamCapacity = Number(project.team_capacity);
+  const rawTeamCapacity = Number(
+    project.team_capacity ?? project.capacity ?? project.teamCapacity
+  );
   const teamCapacity = Number.isFinite(rawTeamCapacity) && rawTeamCapacity > 0 ? rawTeamCapacity : null;
   const deadlineLabel = project.deadline ? formatDate(project.deadline) : getMockDeadline(project.created_at);
   const estimatedStartLabel = project.estimated_start_date
@@ -105,6 +109,7 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
     message: string | null;
     created_at: string;
   }> = [];
+  let canManageTeamRoles = false;
   if (currentUserId && !isOwner) {
     const { data: myRequest } = await authClient
       .from("project_requests")
@@ -117,7 +122,22 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
       initialRequestStatus = status;
     }
   }
-  if (currentUserId && isOwner) {
+  if (currentUserId) {
+    if (isOwner) {
+      canManageTeamRoles = true;
+    } else {
+      const { data: currentMemberRow } = await authClient
+        .from("project_members")
+        .select("team_role, status")
+        .eq("project_id", id)
+        .eq("user_id", currentUserId)
+        .eq("status", "accepted")
+        .maybeSingle();
+      canManageTeamRoles = currentMemberRow?.team_role === "co_leader";
+    }
+  }
+
+  if (currentUserId && canManageTeamRoles) {
     const { data: pendingRows } = await authClient
       .from("project_requests")
       .select("id, requester_id, message, created_at")
@@ -169,7 +189,7 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
 
   const { data: acceptedMemberRows } = await authClient
     .from("project_members")
-    .select("user_id, role_title")
+    .select("user_id, role_title, team_role")
     .eq("project_id", id)
     .eq("status", "accepted");
 
@@ -210,11 +230,19 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
       .map((row: any) => {
         const profile = acceptedProfilesById.get(row.user_id);
         const displayName = profile?.full_name || profile?.username || "Team Member";
+        const teamRole: string = row.team_role || "member";
+        const rolePrefix =
+          teamRole === "leader"
+            ? "Leader"
+            : teamRole === "co_leader"
+            ? "Co-Leader"
+            : "Member";
         return {
           id: row.user_id as string,
           profileId: row.user_id as string,
           name: displayName,
-          role: row.role_title || "Contributor",
+          role: `${rolePrefix}${row.role_title ? ` • ${row.role_title}` : ""}`,
+          teamRole,
           avatar:
             profile?.avatar_url ||
             `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(displayName)}`,
@@ -252,9 +280,15 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
                     </Button>
                   </Link>
                 ) : isOwner ? (
-                  <Badge className="bg-violet-500/15 text-violet-200 border-violet-400/30 hover:bg-violet-500/15 cursor-default">
-                    You are project owner
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-violet-500/15 text-violet-200 border-violet-400/30 hover:bg-violet-500/15 cursor-default">
+                      You are project owner
+                    </Badge>
+                    <OwnerProjectActions
+                      projectId={id}
+                      projectStatus={String(project.status || "idea")}
+                    />
+                  </div>
                 ) : (
                   <ProjectRequestButton projectId={id} initialStatus={initialRequestStatus} />
                 )}
@@ -443,7 +477,23 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
                   </div>
                 </div>
 
-                {isOwner && (
+                {canManageTeamRoles && (
+                  <TeamRoleManager
+                    projectId={id}
+                    members={teamMembers
+                      .filter((member) => member.profileId && member.id !== (owner?.id || ""))
+                      .map((member) => ({
+                        userId: member.id,
+                        displayName: member.name,
+                        currentRole:
+                          member.teamRole === "leader" || member.teamRole === "co_leader"
+                            ? member.teamRole
+                            : "member",
+                      }))}
+                  />
+                )}
+
+                {canManageTeamRoles && (
                   <OwnerRequestsPanel
                     projectId={id}
                     initialRequests={ownerPendingRequests}

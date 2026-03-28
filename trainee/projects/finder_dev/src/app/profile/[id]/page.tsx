@@ -94,7 +94,7 @@ export default async function UserProfileDetailPage({
   } = await authClient.auth.getUser();
   const dataClient = (supabaseAdmin || supabaseServer) as any;
 
-  const [profileResult, projectsResult, collaborationsResult] = await Promise.all([
+  const [profileResult, projectsResult, collaborationsResult, progressResult, achievementsResult] = await Promise.all([
     dataClient.from("profiles").select("*").eq("id", userId).maybeSingle(),
     dataClient
       .from("projects")
@@ -109,6 +109,15 @@ export default async function UserProfileDetailPage({
       .select("id", { count: "exact", head: true })
       .eq("user_id", userId)
       .eq("status", "accepted"),
+    dataClient
+      .from("user_progress")
+      .select("xp_total, level")
+      .eq("user_id", userId)
+      .maybeSingle(),
+    dataClient
+      .from("user_achievements")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId),
   ]);
 
   const profile = (profileResult.data as ProfileRow | null) ?? null;
@@ -129,14 +138,9 @@ export default async function UserProfileDetailPage({
     (typeof profile.about === "string" && profile.about) ||
     (typeof profile.bio === "string" && profile.bio) ||
     "No about information has been added yet.";
-  const rawAchievementsValue =
-    profile.achievement_count ?? profile.achievements_count ?? profile.achievements;
-  const achievementsCount =
-    typeof rawAchievementsValue === "number"
-      ? rawAchievementsValue
-      : typeof rawAchievementsValue === "string"
-      ? Number.parseInt(rawAchievementsValue, 10) || 0
-      : 0;
+  const achievementsCount = achievementsResult.count ?? 0;
+  const level = Number((progressResult.data as any)?.level ?? 1);
+  const xpTotal = Number((progressResult.data as any)?.xp_total ?? 0);
   const projectsCount = projectsResult.count ?? 0;
   const collaborationsCount = collaborationsResult.count ?? 0;
 
@@ -162,6 +166,12 @@ export default async function UserProfileDetailPage({
   );
   const topLanguages = languageTags.slice(0, 10);
   const topTechnologies = technologyTags.slice(0, 12);
+  const currentLevelBaseXp = Math.max((level - 1) * 100, 0);
+  const nextLevelBaseXp = level * 100;
+  const levelProgressPercent = Math.min(
+    100,
+    Math.max(0, ((xpTotal - currentLevelBaseXp) / Math.max(nextLevelBaseXp - currentLevelBaseXp, 1)) * 100)
+  );
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-950">
@@ -201,6 +211,10 @@ export default async function UserProfileDetailPage({
                         </div>
                         <h2 className="text-2xl font-semibold text-white mb-2">{displayName}</h2>
                         <p className="text-slate-400">{profileIdentity}</p>
+                        <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-violet-400/35 bg-violet-500/15 px-3 py-1">
+                          <span className="text-[11px] uppercase tracking-wider text-violet-200">Level</span>
+                          <span className="text-sm font-bold text-white">{level}</span>
+                        </div>
 
                         {(profile.github_url || profile.website_url || profile.linkedin_url) && (
                           <div className="flex flex-wrap justify-center gap-3 mt-5">
@@ -306,12 +320,29 @@ export default async function UserProfileDetailPage({
                           <p className="text-sm text-slate-400 mt-1">Projects</p>
                         </div>
                         <div className="rounded-lg border border-slate-800/60 bg-slate-900/60 p-4 text-center">
-                          <p className="text-2xl font-bold text-purple-400">{collaborationsCount}</p>
-                          <p className="text-sm text-slate-400 mt-1">Collaborations</p>
+                          <p className="text-2xl font-bold text-purple-400">{level}</p>
+                          <p className="text-sm text-slate-400 mt-1">Level</p>
                         </div>
                         <div className="rounded-lg border border-slate-800/60 bg-slate-900/60 p-4 text-center">
-                          <p className="text-2xl font-bold text-green-400">{achievementsCount}</p>
-                          <p className="text-sm text-slate-400 mt-1">Achievements</p>
+                          <p className="text-2xl font-bold text-green-400">{xpTotal}</p>
+                          <p className="text-sm text-slate-400 mt-1">XP</p>
+                        </div>
+                      </div>
+                      <div className="mt-4 rounded-lg border border-slate-800/60 bg-slate-900/60 p-3 text-center">
+                        <p className="text-sm text-slate-300">
+                          Unlocked achievements: <span className="text-cyan-300 font-semibold">{achievementsCount}</span>
+                        </p>
+                        <div className="mt-3">
+                          <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
+                            <span>Level {level}</span>
+                            <span>Level {level + 1}</span>
+                          </div>
+                          <div className="h-2 rounded-full bg-slate-800">
+                            <div
+                              className="h-2 rounded-full bg-gradient-to-r from-cyan-500 via-blue-500 to-violet-500"
+                              style={{ width: `${levelProgressPercent}%` }}
+                            />
+                          </div>
                         </div>
                       </div>
                     </CardContent>
