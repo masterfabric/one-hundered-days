@@ -21,6 +21,8 @@ import 'package:tiny_plates/app/views/view_pantry/models/pantry_view_model.dart'
     as _i731;
 import 'package:tiny_plates/app/views/view_recipe/models/recipe_view_model.dart'
     as _i594;
+import 'package:tiny_plates/app/views/view_recipe_feed/models/recipe_feed_view_model.dart'
+    as _i387;
 import 'package:tiny_plates/app/views/view_user_profile/models/user_profile_view_model.dart'
     as _i813;
 
@@ -38,6 +40,7 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i902.AllergyTrackerViewModel>(
         () => _i902.AllergyTrackerViewModel());
     gh.factory<_i594.RecipeViewModel>(() => _i594.RecipeViewModel());
+    gh.factory<_i387.RecipeFeedViewModel>(() => _i387.RecipeFeedViewModel());
     return this;
   }
 }

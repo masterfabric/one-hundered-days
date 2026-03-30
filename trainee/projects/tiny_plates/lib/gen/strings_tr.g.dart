@@ -157,6 +157,18 @@ class TranslationsTr with BaseTranslations<AppLocale, Translations> implements T
 	@override String get recipeEnginePrepTime => 'dk';
 	@override String get recipeEngineCalories => 'kcal';
 	@override String get recipeEngineSensoryTips => 'Duyusal İpuçları';
+
+	@override String get homeFeatureRecipeFeed => 'Tarif Akışı';
+	@override String get homeFeatureRecipeFeedDesc => 'Kişiselleştirilmiş tarif önerilerin';
+	@override String get recipeFeedTitle => 'Tarif Akışı';
+	@override String get recipeFeedSubtitle => 'kişisel tarif';
+	@override String get recipeFeedPrepTime => 'dk';
+	@override String get recipeFeedCalories => 'kcal';
+	@override String get recipeFeedSensoryAdapted => 'Duyusal Uyarlamalı';
+	@override String get recipeFeedSensoryTips => 'Duyusal İpuçları';
+	@override String get recipeFeedEmptyTitle => 'Henüz tarif yok';
+	@override String get recipeFeedEmptySubtitle => 'Kişiselleştirilmiş tarifler için kilerinize malzeme ekleyin ve çocuğunuzun profilini oluşturun.';
+	@override String get recipeFeedRefresh => 'Akışı Yenile';
 }
 
 /// The flat map containing all translations for locale <tr>.
@@ -286,6 +298,17 @@ extension on TranslationsTr {
 			'recipeEnginePrepTime' => 'dk',
 			'recipeEngineCalories' => 'kcal',
 			'recipeEngineSensoryTips' => 'Duyusal İpuçları',
+			'homeFeatureRecipeFeed' => 'Tarif Akışı',
+			'homeFeatureRecipeFeedDesc' => 'Kişiselleştirilmiş tarif önerilerin',
+			'recipeFeedTitle' => 'Tarif Akışı',
+			'recipeFeedSubtitle' => 'kişisel tarif',
+			'recipeFeedPrepTime' => 'dk',
+			'recipeFeedCalories' => 'kcal',
+			'recipeFeedSensoryAdapted' => 'Duyusal Uyarlamalı',
+			'recipeFeedSensoryTips' => 'Duyusal İpuçları',
+			'recipeFeedEmptyTitle' => 'Henüz tarif yok',
+			'recipeFeedEmptySubtitle' => 'Kişiselleştirilmiş tarifler için kilerinize malzeme ekleyin ve çocuğunuzun profilini oluşturun.',
+			'recipeFeedRefresh' => 'Akışı Yenile',
 			_ => null,
 		};
 	}

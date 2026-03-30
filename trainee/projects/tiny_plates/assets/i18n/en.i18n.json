@@ -129,5 +129,18 @@
   "recipeEngineNoRecipes": "No safe recipes found for selected ingredients.",
   "recipeEnginePrepTime": "min",
   "recipeEngineCalories": "kcal",
-  "recipeEngineSensoryTips": "Sensory Tips"
+  "recipeEngineSensoryTips": "Sensory Tips",
+
+  "homeFeatureRecipeFeed": "Recipe Feed",
+  "homeFeatureRecipeFeedDesc": "Your personalised recipe suggestions",
+
+  "recipeFeedTitle": "Recipe Feed",
+  "recipeFeedSubtitle": "personalised recipes",
+  "recipeFeedPrepTime": "min",
+  "recipeFeedCalories": "kcal",
+  "recipeFeedSensoryAdapted": "Sensory Adapted",
+  "recipeFeedSensoryTips": "Sensory Tips",
+  "recipeFeedEmptyTitle": "No recipes yet",
+  "recipeFeedEmptySubtitle": "Add ingredients to your pantry and set up your child's profile to get personalised recipes.",
+  "recipeFeedRefresh": "Refresh Feed"
 }

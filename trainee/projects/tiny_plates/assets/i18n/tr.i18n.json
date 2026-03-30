@@ -129,5 +129,18 @@
   "recipeEngineNoRecipes": "Seçili malzemeler için güvenli tarif bulunamadı.",
   "recipeEnginePrepTime": "dk",
   "recipeEngineCalories": "kcal",
-  "recipeEngineSensoryTips": "Duyusal İpuçları"
+  "recipeEngineSensoryTips": "Duyusal İpuçları",
+
+  "homeFeatureRecipeFeed": "Tarif Akışı",
+  "homeFeatureRecipeFeedDesc": "Kişiselleştirilmiş tarif önerilerin",
+
+  "recipeFeedTitle": "Tarif Akışı",
+  "recipeFeedSubtitle": "kişisel tarif",
+  "recipeFeedPrepTime": "dk",
+  "recipeFeedCalories": "kcal",
+  "recipeFeedSensoryAdapted": "Duyusal Uyarlamalı",
+  "recipeFeedSensoryTips": "Duyusal İpuçları",
+  "recipeFeedEmptyTitle": "Henüz tarif yok",
+  "recipeFeedEmptySubtitle": "Kilerinize malzeme ekleyin ve çocuğunuzun profilini oluşturun.",
+  "recipeFeedRefresh": "Akışı Yenile"
 }

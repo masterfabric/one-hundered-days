@@ -397,6 +397,39 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 
 	/// en: 'Sensory Tips'
 	String get recipeEngineSensoryTips => 'Sensory Tips';
+
+	/// en: 'Recipe Feed'
+	String get homeFeatureRecipeFeed => 'Recipe Feed';
+
+	/// en: 'Your personalised recipe suggestions'
+	String get homeFeatureRecipeFeedDesc => 'Your personalised recipe suggestions';
+
+	/// en: 'Recipe Feed'
+	String get recipeFeedTitle => 'Recipe Feed';
+
+	/// en: 'personalised recipes'
+	String get recipeFeedSubtitle => 'personalised recipes';
+
+	/// en: 'min'
+	String get recipeFeedPrepTime => 'min';
+
+	/// en: 'kcal'
+	String get recipeFeedCalories => 'kcal';
+
+	/// en: 'Sensory Adapted'
+	String get recipeFeedSensoryAdapted => 'Sensory Adapted';
+
+	/// en: 'Sensory Tips'
+	String get recipeFeedSensoryTips => 'Sensory Tips';
+
+	/// en: 'No recipes yet'
+	String get recipeFeedEmptyTitle => 'No recipes yet';
+
+	/// en: 'Add ingredients to your pantry and set up your child\'s profile to get personalised recipes.'
+	String get recipeFeedEmptySubtitle => 'Add ingredients to your pantry and set up your child\'s profile to get personalised recipes.';
+
+	/// en: 'Refresh Feed'
+	String get recipeFeedRefresh => 'Refresh Feed';
 }
 
 /// The flat map containing all translations for locale <en>.
@@ -526,6 +559,17 @@ extension on Translations {
 			'recipeEnginePrepTime' => 'min',
 			'recipeEngineCalories' => 'kcal',
 			'recipeEngineSensoryTips' => 'Sensory Tips',
+			'homeFeatureRecipeFeed' => 'Recipe Feed',
+			'homeFeatureRecipeFeedDesc' => 'Your personalised recipe suggestions',
+			'recipeFeedTitle' => 'Recipe Feed',
+			'recipeFeedSubtitle' => 'personalised recipes',
+			'recipeFeedPrepTime' => 'min',
+			'recipeFeedCalories' => 'kcal',
+			'recipeFeedSensoryAdapted' => 'Sensory Adapted',
+			'recipeFeedSensoryTips' => 'Sensory Tips',
+			'recipeFeedEmptyTitle' => 'No recipes yet',
+			'recipeFeedEmptySubtitle' => 'Add ingredients to your pantry and set up your child\'s profile to get personalised recipes.',
+			'recipeFeedRefresh' => 'Refresh Feed',
 			_ => null,
 		};
 	}
