@@ -199,6 +199,11 @@
     "show_mode_selector": true,
     "max_recipes_shown": 6
   },
+  "recipe_feed_configuration": {
+    "max_feed_items": 10,
+    "show_match_score": true,
+    "show_sensory_badge": true
+  },
   "features": {
     "calorieTracking": true
   },
