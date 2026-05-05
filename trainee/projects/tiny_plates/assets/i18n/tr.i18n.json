@@ -142,5 +142,18 @@
   "recipeFeedSensoryTips": "Duyusal İpuçları",
   "recipeFeedEmptyTitle": "Henüz tarif yok",
   "recipeFeedEmptySubtitle": "Kilerinize malzeme ekleyin ve çocuğunuzun profilini oluşturun.",
-  "recipeFeedRefresh": "Akışı Yenile"
+  "recipeFeedRefresh": "Akışı Yenile",
+
+  "recipeDetailIngredients": "Malzemeler",
+  "recipeDetailInstructions": "Hazırlanışı",
+  "recipeDetailNutrientInfo": "Besin Bilgisi",
+  "recipeDetailNutrientsTargeted": "Hedeflenen Besinler",
+  "recipeDetailSensoryGuidance": "Duyusal Rehberlik",
+  "recipeDetailAiRationale": "Neden Bu Tarif?",
+  "recipeDetailCookedThis": "Bunu Pişirdim!",
+  "recipeDetailMealLogged": "Yemek Kaydedildi ✓",
+  "recipeDetailPrepTime": "dk",
+  "recipeDetailCalories": "kcal",
+  "recipeDetailTextureNote": "Doku Notu",
+  "recipeDetailViewDetails": "Detayları Gör"
 }

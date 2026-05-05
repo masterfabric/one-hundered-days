@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:osmea_components/osmea_components.dart';
 import 'package:tiny_plates/app/views/view_recipe/models/module/recipe.dart';
 import 'package:tiny_plates/app/views/view_recipe_feed/models/module/recipe_feed_item.dart';
@@ -398,6 +399,19 @@ class _ExpandedDetail extends StatelessWidget {
             ),
           ),
         ),
+
+        // View Details button
+        OsmeaComponents.sizedBox(height: context.spacing12),
+        Align(
+          alignment: Alignment.centerRight,
+          child: OsmeaComponents.button(
+            text: t.recipeDetailViewDetails,
+            onPressed: () => context.push('/recipe-detail', extra: recipe),
+            variant: ButtonVariant.outlined,
+            size: ButtonSize.small,
+          ),
+        ),
+        OsmeaComponents.sizedBox(height: context.spacing8),
 
         // Sensory tips
         if (recipe.sensoryTips.isNotEmpty) ...[

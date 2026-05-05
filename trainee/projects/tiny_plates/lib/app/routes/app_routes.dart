@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:masterfabric_core/masterfabric_core.dart';
 import 'package:tiny_plates/app/views/view_allergy_tracker/allergy_tracker_view.dart';
+import 'package:tiny_plates/app/views/view_recipe/models/module/recipe.dart';
 import 'package:tiny_plates/app/views/view_recipe/recipe_view.dart';
+import 'package:tiny_plates/app/views/view_recipe_detail/recipe_detail_view.dart';
 import 'package:tiny_plates/app/views/view_recipe_feed/recipe_feed_view.dart';
 import 'package:tiny_plates/app/views/view_dashboard/dashboard_shell.dart';
 import 'package:tiny_plates/app/views/view_diary/diary_view.dart';
@@ -109,6 +111,18 @@ final GoRouter appRouter = GoRouter(
         return RecipeFeedView(
           goRoute: (String path) => context.go(path),
           arguments: const {'view': 'recipeFeed'},
+        );
+      },
+    ),
+
+    /// Recipe detail – pushed on top of feed or engine (supports back nav).
+    GoRoute(
+      path: '/recipe-detail',
+      builder: (BuildContext context, GoRouterState state) {
+        final recipe = state.extra as Recipe;
+        return RecipeDetailView(
+          goRoute: (String path) => context.go(path),
+          recipe: recipe,
         );
       },
     ),

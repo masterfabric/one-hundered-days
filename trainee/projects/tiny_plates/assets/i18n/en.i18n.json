@@ -142,5 +142,18 @@
   "recipeFeedSensoryTips": "Sensory Tips",
   "recipeFeedEmptyTitle": "No recipes yet",
   "recipeFeedEmptySubtitle": "Add ingredients to your pantry and set up your child's profile to get personalised recipes.",
-  "recipeFeedRefresh": "Refresh Feed"
+  "recipeFeedRefresh": "Refresh Feed",
+
+  "recipeDetailIngredients": "Ingredients",
+  "recipeDetailInstructions": "Instructions",
+  "recipeDetailNutrientInfo": "Nutrient Information",
+  "recipeDetailNutrientsTargeted": "Nutrients Targeted",
+  "recipeDetailSensoryGuidance": "Sensory Guidance",
+  "recipeDetailAiRationale": "Why This Recipe?",
+  "recipeDetailCookedThis": "Cooked This!",
+  "recipeDetailMealLogged": "Meal Logged ✓",
+  "recipeDetailPrepTime": "min",
+  "recipeDetailCalories": "kcal",
+  "recipeDetailTextureNote": "Texture Note",
+  "recipeDetailViewDetails": "View Details"
 }
