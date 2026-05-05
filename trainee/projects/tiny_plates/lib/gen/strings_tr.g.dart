@@ -169,6 +169,19 @@ class TranslationsTr with BaseTranslations<AppLocale, Translations> implements T
 	@override String get recipeFeedEmptyTitle => 'Henüz tarif yok';
 	@override String get recipeFeedEmptySubtitle => 'Kişiselleştirilmiş tarifler için kilerinize malzeme ekleyin ve çocuğunuzun profilini oluşturun.';
 	@override String get recipeFeedRefresh => 'Akışı Yenile';
+
+	@override String get recipeDetailIngredients => 'Malzemeler';
+	@override String get recipeDetailInstructions => 'Hazırlanışı';
+	@override String get recipeDetailNutrientInfo => 'Besin Bilgisi';
+	@override String get recipeDetailNutrientsTargeted => 'Hedeflenen Besinler';
+	@override String get recipeDetailSensoryGuidance => 'Duyusal Rehberlik';
+	@override String get recipeDetailAiRationale => 'Neden Bu Tarif?';
+	@override String get recipeDetailCookedThis => 'Bunu Pişirdim!';
+	@override String get recipeDetailMealLogged => 'Yemek Kaydedildi ✓';
+	@override String get recipeDetailPrepTime => 'dk';
+	@override String get recipeDetailCalories => 'kcal';
+	@override String get recipeDetailTextureNote => 'Doku Notu';
+	@override String get recipeDetailViewDetails => 'Detayları Gör';
 }
 
 /// The flat map containing all translations for locale <tr>.
@@ -309,6 +322,18 @@ extension on TranslationsTr {
 			'recipeFeedEmptyTitle' => 'Henüz tarif yok',
 			'recipeFeedEmptySubtitle' => 'Kişiselleştirilmiş tarifler için kilerinize malzeme ekleyin ve çocuğunuzun profilini oluşturun.',
 			'recipeFeedRefresh' => 'Akışı Yenile',
+			'recipeDetailIngredients' => 'Malzemeler',
+			'recipeDetailInstructions' => 'Hazırlanışı',
+			'recipeDetailNutrientInfo' => 'Besin Bilgisi',
+			'recipeDetailNutrientsTargeted' => 'Hedeflenen Besinler',
+			'recipeDetailSensoryGuidance' => 'Duyusal Rehberlik',
+			'recipeDetailAiRationale' => 'Neden Bu Tarif?',
+			'recipeDetailCookedThis' => 'Bunu Pişirdim!',
+			'recipeDetailMealLogged' => 'Yemek Kaydedildi ✓',
+			'recipeDetailPrepTime' => 'dk',
+			'recipeDetailCalories' => 'kcal',
+			'recipeDetailTextureNote' => 'Doku Notu',
+			'recipeDetailViewDetails' => 'Detayları Gör',
 			_ => null,
 		};
 	}

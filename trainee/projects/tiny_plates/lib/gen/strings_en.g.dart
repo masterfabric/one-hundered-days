@@ -430,6 +430,42 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 
 	/// en: 'Refresh Feed'
 	String get recipeFeedRefresh => 'Refresh Feed';
+
+	/// en: 'Ingredients'
+	String get recipeDetailIngredients => 'Ingredients';
+
+	/// en: 'Instructions'
+	String get recipeDetailInstructions => 'Instructions';
+
+	/// en: 'Nutrient Information'
+	String get recipeDetailNutrientInfo => 'Nutrient Information';
+
+	/// en: 'Nutrients Targeted'
+	String get recipeDetailNutrientsTargeted => 'Nutrients Targeted';
+
+	/// en: 'Sensory Guidance'
+	String get recipeDetailSensoryGuidance => 'Sensory Guidance';
+
+	/// en: 'Why This Recipe?'
+	String get recipeDetailAiRationale => 'Why This Recipe?';
+
+	/// en: 'Cooked This!'
+	String get recipeDetailCookedThis => 'Cooked This!';
+
+	/// en: 'Meal Logged ✓'
+	String get recipeDetailMealLogged => 'Meal Logged ✓';
+
+	/// en: 'min'
+	String get recipeDetailPrepTime => 'min';
+
+	/// en: 'kcal'
+	String get recipeDetailCalories => 'kcal';
+
+	/// en: 'Texture Note'
+	String get recipeDetailTextureNote => 'Texture Note';
+
+	/// en: 'View Details'
+	String get recipeDetailViewDetails => 'View Details';
 }
 
 /// The flat map containing all translations for locale <en>.
@@ -570,6 +606,18 @@ extension on Translations {
 			'recipeFeedEmptyTitle' => 'No recipes yet',
 			'recipeFeedEmptySubtitle' => 'Add ingredients to your pantry and set up your child\'s profile to get personalised recipes.',
 			'recipeFeedRefresh' => 'Refresh Feed',
+			'recipeDetailIngredients' => 'Ingredients',
+			'recipeDetailInstructions' => 'Instructions',
+			'recipeDetailNutrientInfo' => 'Nutrient Information',
+			'recipeDetailNutrientsTargeted' => 'Nutrients Targeted',
+			'recipeDetailSensoryGuidance' => 'Sensory Guidance',
+			'recipeDetailAiRationale' => 'Why This Recipe?',
+			'recipeDetailCookedThis' => 'Cooked This!',
+			'recipeDetailMealLogged' => 'Meal Logged ✓',
+			'recipeDetailPrepTime' => 'min',
+			'recipeDetailCalories' => 'kcal',
+			'recipeDetailTextureNote' => 'Texture Note',
+			'recipeDetailViewDetails' => 'View Details',
 			_ => null,
 		};
 	}
