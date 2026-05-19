@@ -31,7 +31,7 @@ flowchart LR
 
 - **Clients:** Native IME only (no Flutter for the keyboard UI).
 - **Backend:** Supabase **Edge Functions** — validate → optional Postgres usage cap → build prompt (mode × action × locale × theme) → Gemini → post-process → JSON.
-- **Data:** **Supabase Postgres** (`devices`, optional settings/usage). **Rate limit:** local debounce on keyboard + optional daily counter in Postgres (no Redis). See [spec/architecture.md](./spec/architecture.md).
+- **Data:** **Supabase Postgres** (`devices`, optional settings/usage). **Rate limit:** local debounce on keyboard + optional daily counter in Postgres. See [spec/architecture.md](./spec/architecture.md).
 
 ---
 
@@ -45,7 +45,7 @@ flowchart LR
 | AI | Google Gemini (e.g. flash model) |
 | Database | Supabase (PostgreSQL) |
 | Secrets | Supabase Edge Secrets (`GEMINI_API_KEY`) |
-| Rate limit | Local client debounce + optional Postgres daily caps (no Redis) |
+| Rate limit | Local client debounce + optional Postgres daily caps |
 | Deploy | Supabase CLI / hosted Supabase project |
 
 ---
@@ -76,6 +76,9 @@ Out of scope for MVP: user-defined free-form prompts, offline on-device LLM, des
 | [spec/api_endpoints.md](./spec/api_endpoints.md) | REST contract |
 | [spec/ui_design.md](./spec/ui_design.md) | Layout zones, mockups |
 | [spec/roadmap.md](./spec/roadmap.md) | 14-day breakdown (7 Android+backend, 7 iOS) |
+| [spec/documentation_conventions.md](./spec/documentation_conventions.md) | Naming (English repo paths), Markdown tone |
+| [spec/toolchain_versions.md](./spec/toolchain_versions.md) | SDK / CLI versions for reproducible builds |
+| [spec/supabase_repo_layout.md](./spec/supabase_repo_layout.md) | `supabase/` migrations, seed, functions |
 
 ---
 
@@ -110,9 +113,13 @@ Out of scope for MVP: user-defined free-form prompts, offline on-device LLM, des
 
 ```
 trainee/projects/native_ai_keyboard/
-├── supabase/          # migrations + Edge Functions — Days 01–03
-├── android-keyboard/  # Kotlin — Days 04–07
-└── ios-keyboard/      # Swift — Days 08–12
+├── supabase/
+│   ├── migrations/     # SQL migrations
+│   ├── seed/           # optional local seed data
+│   ├── schemas/        # optional DDL notes for tooling
+│   └── functions/      # Edge Functions (register-device, transform, …)
+├── android-keyboard/
+└── ios-keyboard/
 ```
 
 Cross-cutting work (settings, final QA, ship) in Days 13–14 spans backend + both clients as needed.

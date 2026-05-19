@@ -1,0 +1,8 @@
+[api]
+enabled = true
+
+[functions.register-device]
+verify_jwt = false
+
+[functions.transform]
+verify_jwt = false

@@ -4,7 +4,19 @@
 
 Native AI Keyboard has three layers: **Android keyboard** (Kotlin), **iOS keyboard** (Swift), and **Supabase-backed server logic** (PostgreSQL + **Edge Functions**). Mobile clients never hold the **Gemini API key**; they send `text`, `mode`, `action`, `locale`, optional `theme`, and a **device identifier** after registration.
 
-**No NestJS** in this architecture: HTTP API and Gemini calls live in **Supabase Edge Functions** (TypeScript/Deno). **No Redis**: rate limiting uses **local client throttling** plus optional **Postgres rows** for usage visibility / soft server caps.
+**MVP backend scope:** HTTP handling and Gemini calls are implemented as **Supabase Edge Functions** (TypeScript on Deno). **Rate limiting** is **local debounce on the keyboard** plus optional **Postgres-backed** daily counters in Edge for visibility and soft caps. The versioned **`supabase/`** tree (migrations, functions, optional seed/schemas) lives next to app code — see [supabase_repo_layout.md](./supabase_repo_layout.md).
+
+## Client layering (conceptual)
+
+| Layer | Responsibility | Examples |
+|-------|----------------|----------|
+| **Configuration** | Base URLs, feature flags, build-time keys (never Gemini) | `Info.plist`, Gradle `BuildConfig` |
+| **API** | Request/response types, HTTP calls, error mapping | `URLSession` / OkHttp for `register-device` and `transform` |
+| **Service** | Orchestration: debounce, locale/mode selection, call API, map to UI | Transform use case before paste |
+| **Repository / persistence** | Local prefs, secure token storage | `SharedPreferences`, App Group `UserDefaults`, Keychain |
+| **Shared utilities** | Pure helpers | JSON, locale resolution, string limits |
+
+This plan does not mandate a folder tree per layer; use it as a guideline when adding Kotlin/Swift modules.
 
 ## High-Level Diagram
 
@@ -64,14 +76,18 @@ flowchart LR
 | **PostgreSQL** | `devices` (who uses the keyboard), optional `device_settings`, optional `usage_events` or daily counters for **analytics** and soft server-side caps. |
 | **Supabase Secrets** | Gemini API key **only** here (Edge runtime env). Never stored in a client-readable table. |
 
-### Suggested Edge Function layout
+### Versioned `supabase/` directory
 
-```
+Keep **migrations**, optional **seed** data, optional **schema** notes, and **Edge Functions** under the implementation repo’s `supabase/` folder (see [supabase_repo_layout.md](./supabase_repo_layout.md)). That layout matches common open-source Supabase apps and is easier for humans and tools to navigate than Markdown-only descriptions.
+
+### Edge Function layout (under `supabase/functions/`)
+
+```text
 supabase/functions/
 ├── register-device/index.ts   # upsert device by deviceId + platform
-├── transform/index.ts       # main AI path: validate → optional DB quota → Gemini → JSON
+├── transform/index.ts         # validate → optional DB quota → Gemini → JSON
 └── _shared/
-    └── prompts.ts           # mode × action × locale × theme templates
+    └── prompts.ts             # mode × action × locale × theme templates
 ```
 
 ### Transform pipeline
@@ -123,7 +139,7 @@ interface PromptTemplate {
 | Store | Usage |
 |-------|--------|
 | **PostgreSQL (Supabase)** | `devices` — register **deviceId** (client UUID or server-generated), `platform`, `created_at`, `device_token` (opaque bearer). Optional `device_settings`. Optional `usage_daily` / `usage_events` for “how many users / how many calls”. |
-| **Redis** | **Not used** in MVP. |
+| **Separate cache tier** | **Out of scope for MVP** — server caps use Postgres only. |
 
 ### Sample tables (MVP)
 

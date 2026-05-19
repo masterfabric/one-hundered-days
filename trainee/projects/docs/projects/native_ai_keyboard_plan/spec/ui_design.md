@@ -1,5 +1,9 @@
 # Native AI Keyboard — UI Design & Mockups
 
+## Repository naming (mockups and assets)
+
+Add new images under `assets/mockups/` using **English** file names (e.g. `keyboard_work_mode.png`). Keep user-visible UI copy localized in app resources; repository paths stay language-neutral for contributors.
+
 ## Design Goals
 
 - **Native feel:** Users should not feel a sharp break from the system keyboard

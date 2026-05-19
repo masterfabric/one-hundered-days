@@ -6,7 +6,7 @@ From an **Edge Function** (`transform` dev branch or separate `gemini-smoke`), c
 
 ## Architecture & Packages
 
-- **Runtime:** Deno inside Supabase Edge Functions (not NestJS).
+- **Runtime:** Deno inside Supabase Edge Functions (Supabase-managed TypeScript runtime).
 - **Shared:** `_shared/prompts.ts` — all TR/EN combinations; theme-aware wording where needed.
 
 ### Backend Endpoints

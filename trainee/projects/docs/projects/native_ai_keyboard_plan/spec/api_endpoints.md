@@ -1,6 +1,6 @@
 # Native AI Keyboard — API Endpoints
 
-HTTP contract for MVP. **Implementation:** Supabase **Edge Functions** (no NestJS). Base URL pattern:
+HTTP contract for MVP. **Implementation:** Supabase **Edge Functions** (TypeScript on Deno, hosted by Supabase). Base URL pattern:
 
 ```text
 https://<PROJECT_REF>.supabase.co/functions/v1/<function-name>
@@ -135,4 +135,3 @@ Edge Function `prompts-preview` behind auth; **disabled in production** (deploy 
 
 - **Client:** local debounce / min interval between transform calls (not bypass-proof).
 - **Server (recommended):** Edge Function checks optional `usage_daily` before Gemini; response headers optional: `X-RateLimit-Remaining`, `X-RateLimit-Reset`.
-- **No Redis** in MVP.

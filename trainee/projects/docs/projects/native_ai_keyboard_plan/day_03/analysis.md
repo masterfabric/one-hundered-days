@@ -4,7 +4,7 @@
 
 Ship **`register-device`**: accept stable **`deviceId`** from keyboard, insert/update **Supabase Postgres** `devices` row, return opaque **`deviceToken`** (Bearer). Ship **`transform`**: validate body, verify Bearer, optional **Postgres daily usage** increment / cap, call Day 02 prompt + Gemini, return JSON per [spec/api_endpoints.md](../spec/api_endpoints.md).
 
-**Rate limit:** no Redis — optional **server** cap via Postgres; **client** debounce documented for Android/iOS (Day 05+).
+**Rate limit:** optional **server** cap via Postgres; **client** debounce documented for Android/iOS (Day 05+).
 
 ## Architecture & Packages
 

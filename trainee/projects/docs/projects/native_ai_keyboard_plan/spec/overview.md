@@ -81,7 +81,7 @@ Reference mockup (Day 01 — light theme, default keyboard):
 - **Mobile (keyboard):** Platform-native (Kotlin + Swift)
 - **Backend:** Supabase — **Edge Functions** (transform, register-device), **PostgreSQL** (devices, optional usage/settings)
 - **Secrets:** Gemini key in **Supabase Secrets** only
-- **Rate limit:** **Local** debounce on keyboard + optional **Postgres** daily counters in Edge Function (no Redis)
+- **Rate limit:** **Local** debounce on keyboard + optional **Postgres** daily counters in Edge Function
 - **AI:** Google Gemini (`gemini-2.0-flash` or current flash model)
 
 ## System Architecture

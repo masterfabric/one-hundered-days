@@ -1,0 +1,10 @@
+# Local secrets
+supabase/.env.local
+**/GoogleService-Info.plist
+**/GoogleService-Info*.plist
+!**/GoogleService-Info.plist.example
+
+**/xcuserdata/
+**/*.xcuserstate
+**/DerivedData/
+.DS_Store
