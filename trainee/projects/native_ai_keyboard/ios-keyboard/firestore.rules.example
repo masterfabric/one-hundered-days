@@ -1,0 +1,18 @@
+rules_version = '2';
+// Paste into Firebase Console → Firestore → Rules → Publish.
+// Authentication → Sign-in method → Anonymous: Enabled.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Host sync (`FirebaseDeviceRegistry`).
+    match /devices/{deviceId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // In-app “Report a problem” (`FeedbackReporter`). Top-level = one rule, fewer mistakes than a subcollection.
+    match /issue_reports/{reportId} {
+      allow create: if request.auth != null;
+      allow read, update, delete: if false;
+    }
+  }
+}

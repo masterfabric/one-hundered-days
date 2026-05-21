@@ -1,0 +1,115 @@
+name: AIKeyboard
+options:
+  bundleIdPrefix: com.nativeaikeyboard
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+  developmentLanguage: en
+
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    TARGETED_DEVICE_FAMILY: "1,2"
+    CURRENT_PROJECT_VERSION: 1
+    MARKETING_VERSION: "0.1.0"
+    CODE_SIGN_STYLE: Automatic
+    DEBUG_INFORMATION_FORMAT: dwarf-with-dsym
+
+packages:
+  Firebase:
+    url: https://github.com/firebase/firebase-ios-sdk
+    from: 11.0.0
+
+targets:
+  AIKeyboard:
+    type: application
+    platform: iOS
+    sources:
+      - path: AIKeyboard
+      - path: Shared
+    resources:
+      - path: AIKeyboard/Resources
+    configFiles:
+      Debug: BaseDSYM.xcconfig
+      Release: BaseDSYM.xcconfig
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.nativeaikeyboard.host
+        INFOPLIST_FILE: AIKeyboard/Info.plist
+        DEBUG_INFORMATION_FORMAT: dwarf-with-dsym
+      configs:
+        Debug:
+          DEBUG_INFORMATION_FORMAT: dwarf-with-dsym
+        Release:
+          DEBUG_INFORMATION_FORMAT: dwarf-with-dsym
+    entitlements:
+      path: AIKeyboard/AIKeyboard.entitlements
+    dependencies:
+      - target: AIKeyboardKeyboard
+      - package: Firebase
+        product: FirebaseAnalytics
+      - package: Firebase
+        product: FirebaseCrashlytics
+      - package: Firebase
+        product: FirebaseFirestore
+      - package: Firebase
+        product: FirebaseAuth
+    postBuildScripts:
+      - name: Firebase Crashlytics dSYM
+        script: |
+          # TODO(Firebase): Remove early exit once GoogleService-Info.plist is in AIKeyboard/Resources (see ios-keyboard/README.md).
+          PLIST="${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/GoogleService-Info.plist"
+          if [ ! -f "$PLIST" ]; then
+            echo "note: GoogleService-Info.plist missing — skipping Firebase Crashlytics run (local bypass)"
+            exit 0
+          fi
+          CRASHLYTICS_RUN="${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run"
+          if [ ! -f "$CRASHLYTICS_RUN" ]; then exit 0; fi
+          "$CRASHLYTICS_RUN"
+        basedOnDependencyAnalysis: false
+        inputFiles:
+          - ${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}
+          - ${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${PRODUCT_NAME}
+          - ${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Info.plist
+          - $(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/GoogleService-Info.plist
+          - $(TARGET_BUILD_DIR)/$(EXECUTABLE_PATH)
+    scheme:
+      gatherCoverageData: false
+
+  AIKeyboardKeyboard:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: KeyboardExtension
+      - path: Shared
+    resources:
+      - path: KeyboardExtension/Resources
+    configFiles:
+      Debug: BaseDSYM.xcconfig
+      Release: BaseDSYM.xcconfig
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.nativeaikeyboard.host.keyboard
+        INFOPLIST_FILE: KeyboardExtension/Info.plist
+        DEBUG_INFORMATION_FORMAT: dwarf-with-dsym
+      configs:
+        Debug:
+          DEBUG_INFORMATION_FORMAT: dwarf-with-dsym
+        Release:
+          DEBUG_INFORMATION_FORMAT: dwarf-with-dsym
+    entitlements:
+      path: KeyboardExtension/KeyboardExtension.entitlements
+    dependencies:
+      - package: Firebase
+        product: FirebaseCore
+      - package: Firebase
+        product: FirebaseCrashlytics
+
+schemes:
+  AIKeyboard:
+    build:
+      targets:
+        AIKeyboard: all
+        AIKeyboardKeyboard: all
+    run:
+      config: Debug

@@ -1,0 +1,755 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1072F8312649E91231471D4D /* KeyboardUIRegion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C11C5DF1892A203D605D182 /* KeyboardUIRegion.swift */; };
+		1231923280BEFCBEFD25197D /* KeyboardAppearancePreference.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15BAC83F8AD540D375720202 /* KeyboardAppearancePreference.swift */; };
+		1E82D06963E67B7CAD614730 /* RewriteAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5E41D4F142B3791005B733B /* RewriteAPI.swift */; };
+		1EEAC2502E3D48A6D6310355 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 373419B6BB480B6C9B4A4639 /* FirebaseAnalytics */; };
+		228E597B8E33AF6EF318A328 /* KeyboardUIRegion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C11C5DF1892A203D605D182 /* KeyboardUIRegion.swift */; };
+		24B4E421871E1904C343D006 /* OFL-Noto-Emoji.txt in Resources */ = {isa = PBXBuildFile; fileRef = 8E77B771B922F6E1E32D30F4 /* OFL-Noto-Emoji.txt */; };
+		2AFC37E144DD9ABE8C60B3DC /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = AA535E33424645E0B209E50F /* FirebaseFirestore */; };
+		2B3760ECC4A2FC860EC224B1 /* KeyboardTextReplacement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DB55353BD54A3D323F312BC /* KeyboardTextReplacement.swift */; };
+		36167ED5D53798E207ADE24D /* KeyboardChromeAccent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 394B0A4A56222D9B5C14CCD4 /* KeyboardChromeAccent.swift */; };
+		392F6A805A0AA95CEB192333 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 9D0BC05D9D2644B8420DC615 /* FirebaseCrashlytics */; };
+		3E313A46286BCB6575DAF7F7 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = C12C6BA1047208E72FF1DB10 /* FirebaseCrashlytics */; };
+		46DBCE6EB0C42F9CD820EE9C /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = C1DEADD90D3287B2EF0C5051 /* Localizable.strings */; };
+		4713940B513C0B9B23FD41F9 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 5D865863326DF451A6CB91A2 /* FirebaseCore */; };
+		4735DE14275AECA2AF92B7FA /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AECCE96AD799FBEC37C25FD0 /* AppDelegate.swift */; };
+		4EAE5152A897917428719AD6 /* DeviceId.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73D0A2C8937F9DF77059C180 /* DeviceId.swift */; };
+		4F19102EAF30ABB316BEC1CC /* NonFatalLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32BBCEE9924D8C93E5BEB347 /* NonFatalLog.swift */; };
+		50063ED85661F423CA76189C /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 94D340D2E0D064A9E817FB8B /* FirebaseAuth */; };
+		51923AFCD20C66EE79F69F90 /* SupabaseDeviceAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = E863CB09E7C539671323053C /* SupabaseDeviceAPI.swift */; };
+		5A0D6220F99A3B57BB7354C8 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = E32AD50689F3F282C098992F /* AppConfig.swift */; };
+		5F19812DC96F317862B2EBBD /* NotoColorEmoji.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7A3FD5DBAE5330DE46875AD1 /* NotoColorEmoji.ttf */; };
+		61E05E0955187667F683BDCC /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = EA1766DACEF9DD62CDD98977 /* Localizable.strings */; };
+		63B012582128BB5127FC0D83 /* ConversationStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05A537286F739E2BBB5DD194 /* ConversationStyle.swift */; };
+		70868333013E3C144B8AC4E2 /* DeviceId.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73D0A2C8937F9DF77059C180 /* DeviceId.swift */; };
+		716E426CF73FCD1CA43C2A46 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E25E51E4E3487396100D50B9 /* ContentView.swift */; };
+		73C8B8169FFB8DB0426CD413 /* AppGroupStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2562C289D458EED89DBD0CF /* AppGroupStore.swift */; };
+		760BC2907B1DD9734AEFD0C6 /* KeyboardAppearancePreference.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15BAC83F8AD540D375720202 /* KeyboardAppearancePreference.swift */; };
+		7EAB1F38170826AC237C7526 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AF6CC57C6DE806B1DC94D3F6 /* Assets.xcassets */; };
+		810B69E746F802BADAAE27BD /* FirebaseDeviceRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A64EB3C508D12F4F5495578 /* FirebaseDeviceRegistry.swift */; };
+		85AB12F45F26C840CB9D33C4 /* FeedbackReporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 273C85C958DE1257D27E9459 /* FeedbackReporter.swift */; };
+		8B28DA6AE268AA8B03D2AF8F /* HMACAuth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6489E22660D80E1CADA0880A /* HMACAuth.swift */; };
+		8F89AF6E2BFDE4518862E115 /* RewriteAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5E41D4F142B3791005B733B /* RewriteAPI.swift */; };
+		919083527C93FDF9A5E9306D /* HMACAuth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6489E22660D80E1CADA0880A /* HMACAuth.swift */; };
+		92551A1CC1225F13D0322042 /* NonFatalLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32BBCEE9924D8C93E5BEB347 /* NonFatalLog.swift */; };
+		9C4BEB767B764F1B32FDF85D /* AIKeyboardKeyboard.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 4721407E776A19D36C690CE2 /* AIKeyboardKeyboard.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		A4C1A53B0156155F562A5292 /* KeyboardChromeAccent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 394B0A4A56222D9B5C14CCD4 /* KeyboardChromeAccent.swift */; };
+		AA3977B8F7BECDE4B8E6A881 /* SessionClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A79809FACB27992F0A849B6 /* SessionClient.swift */; };
+		BE584131A5AE35A14FDD034D /* AccountSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = A92A017B272E690F14CADA4A /* AccountSync.swift */; };
+		C08D839AA133C6FAE897A49C /* AppConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC54632D56C40924BC9219E6 /* AppConstants.swift */; };
+		C0B648D429824967FD9963EE /* KeyboardTextReplacement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DB55353BD54A3D323F312BC /* KeyboardTextReplacement.swift */; };
+		C6C7359A4E43D1569354D82E /* AIKeyboardApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0081164527227648AB73FE7 /* AIKeyboardApp.swift */; };
+		CA87759C893ADD6820F1B576 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = E32AD50689F3F282C098992F /* AppConfig.swift */; };
+		D788A3DAAEE437EAF7A10DC9 /* HostSupabaseConfigSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA8D29743944B5A8AC67EE66 /* HostSupabaseConfigSync.swift */; };
+		D914ED6B62266E5DD27B7CDC /* ConversationStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05A537286F739E2BBB5DD194 /* ConversationStyle.swift */; };
+		F68A8D10394A4E6C016A5097 /* KeyboardLayoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D1C42D2251BE3CD59E890D1 /* KeyboardLayoutView.swift */; };
+		FABF9B25F32FEDE672998265 /* SessionClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A79809FACB27992F0A849B6 /* SessionClient.swift */; };
+		FB4A551D32975FB84AFF673F /* AppGroupStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2562C289D458EED89DBD0CF /* AppGroupStore.swift */; };
+		FCBB72CC80A5F171440BA4FB /* SupabaseDeviceAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = E863CB09E7C539671323053C /* SupabaseDeviceAPI.swift */; };
+		FDC9B0DC418820BA23B59662 /* KeyboardViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E8DE75400C553EF057CBEA5 /* KeyboardViewController.swift */; };
+		FEA45C2B3EFC9657D6B380AD /* AppConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC54632D56C40924BC9219E6 /* AppConstants.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		25546EE35EE6929E325BA7E3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 35C086F2C3EDCBAA44AC88EC /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B99A06E22870E4E2C477DB80;
+			remoteInfo = AIKeyboardKeyboard;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		1EDAD8A47C5BE04C7CF29EDA /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				9C4BEB767B764F1B32FDF85D /* AIKeyboardKeyboard.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		05A537286F739E2BBB5DD194 /* ConversationStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationStyle.swift; sourceTree = "<group>"; };
+		099C9153F38C7E0D52EA7CBC /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		14DC7DACE16C0148C92C90F3 /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/Localizable.strings; sourceTree = "<group>"; };
+		15BAC83F8AD540D375720202 /* KeyboardAppearancePreference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardAppearancePreference.swift; sourceTree = "<group>"; };
+		1A64EB3C508D12F4F5495578 /* FirebaseDeviceRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebaseDeviceRegistry.swift; sourceTree = "<group>"; };
+		1E8DE75400C553EF057CBEA5 /* KeyboardViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardViewController.swift; sourceTree = "<group>"; };
+		273C85C958DE1257D27E9459 /* FeedbackReporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackReporter.swift; sourceTree = "<group>"; };
+		32BBCEE9924D8C93E5BEB347 /* NonFatalLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NonFatalLog.swift; sourceTree = "<group>"; };
+		394B0A4A56222D9B5C14CCD4 /* KeyboardChromeAccent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardChromeAccent.swift; sourceTree = "<group>"; };
+		3DB55353BD54A3D323F312BC /* KeyboardTextReplacement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardTextReplacement.swift; sourceTree = "<group>"; };
+		4721407E776A19D36C690CE2 /* AIKeyboardKeyboard.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = AIKeyboardKeyboard.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		4A0338C7A2E02C0C011C722A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		5A79809FACB27992F0A849B6 /* SessionClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionClient.swift; sourceTree = "<group>"; };
+		5CEA54CC411756BA4B74A847 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		6489E22660D80E1CADA0880A /* HMACAuth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HMACAuth.swift; sourceTree = "<group>"; };
+		73D0A2C8937F9DF77059C180 /* DeviceId.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceId.swift; sourceTree = "<group>"; };
+		7A3FD5DBAE5330DE46875AD1 /* NotoColorEmoji.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = NotoColorEmoji.ttf; sourceTree = "<group>"; };
+		7A86496AD6D8166714031957 /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/Localizable.strings; sourceTree = "<group>"; };
+		7C11C5DF1892A203D605D182 /* KeyboardUIRegion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardUIRegion.swift; sourceTree = "<group>"; };
+		7D1C42D2251BE3CD59E890D1 /* KeyboardLayoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardLayoutView.swift; sourceTree = "<group>"; };
+		8E77B771B922F6E1E32D30F4 /* OFL-Noto-Emoji.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "OFL-Noto-Emoji.txt"; sourceTree = "<group>"; };
+		99933DB47AB7F595CC558A61 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		A85BE0E1E51B673193DE00C1 /* AIKeyboard.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = AIKeyboard.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A92A017B272E690F14CADA4A /* AccountSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountSync.swift; sourceTree = "<group>"; };
+		AECCE96AD799FBEC37C25FD0 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		AF6CC57C6DE806B1DC94D3F6 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B2562C289D458EED89DBD0CF /* AppGroupStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppGroupStore.swift; sourceTree = "<group>"; };
+		BA8D29743944B5A8AC67EE66 /* HostSupabaseConfigSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostSupabaseConfigSync.swift; sourceTree = "<group>"; };
+		C0081164527227648AB73FE7 /* AIKeyboardApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIKeyboardApp.swift; sourceTree = "<group>"; };
+		C9B04BACC2FA58203828D9AB /* KeyboardExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = KeyboardExtension.entitlements; sourceTree = "<group>"; };
+		D172A50A2D0C5392EEA32E9A /* AIKeyboard.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AIKeyboard.entitlements; sourceTree = "<group>"; };
+		E25E51E4E3487396100D50B9 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		E32AD50689F3F282C098992F /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
+		E863CB09E7C539671323053C /* SupabaseDeviceAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseDeviceAPI.swift; sourceTree = "<group>"; };
+		F5E41D4F142B3791005B733B /* RewriteAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewriteAPI.swift; sourceTree = "<group>"; };
+		FC54632D56C40924BC9219E6 /* AppConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConstants.swift; sourceTree = "<group>"; };
+		"TEMP_0A8200FD-A8F1-4FEE-9DDA-1359F09C610D" /* BaseDSYM.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = BaseDSYM.xcconfig; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		0BA5A447E6EDDFF7BBFED756 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1EEAC2502E3D48A6D6310355 /* FirebaseAnalytics in Frameworks */,
+				3E313A46286BCB6575DAF7F7 /* FirebaseCrashlytics in Frameworks */,
+				2AFC37E144DD9ABE8C60B3DC /* FirebaseFirestore in Frameworks */,
+				50063ED85661F423CA76189C /* FirebaseAuth in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5287CC8DBAA7C9B61B97D3D1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4713940B513C0B9B23FD41F9 /* FirebaseCore in Frameworks */,
+				392F6A805A0AA95CEB192333 /* FirebaseCrashlytics in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		02F1AC7823F1C654DF2C51A3 = {
+			isa = PBXGroup;
+			children = (
+				8F080BF13C415B75DD5D9C9D /* AIKeyboard */,
+				B42C817EB1A388C575670655 /* KeyboardExtension */,
+				649074E8D47F5A746526CC41 /* Shared */,
+				1DCB8402EB9C88F48EA3D4AB /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		1DCB8402EB9C88F48EA3D4AB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A85BE0E1E51B673193DE00C1 /* AIKeyboard.app */,
+				4721407E776A19D36C690CE2 /* AIKeyboardKeyboard.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		540540A13256B109A8814536 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				EA1766DACEF9DD62CDD98977 /* Localizable.strings */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		649074E8D47F5A746526CC41 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				E32AD50689F3F282C098992F /* AppConfig.swift */,
+				FC54632D56C40924BC9219E6 /* AppConstants.swift */,
+				B2562C289D458EED89DBD0CF /* AppGroupStore.swift */,
+				05A537286F739E2BBB5DD194 /* ConversationStyle.swift */,
+				73D0A2C8937F9DF77059C180 /* DeviceId.swift */,
+				6489E22660D80E1CADA0880A /* HMACAuth.swift */,
+				15BAC83F8AD540D375720202 /* KeyboardAppearancePreference.swift */,
+				394B0A4A56222D9B5C14CCD4 /* KeyboardChromeAccent.swift */,
+				3DB55353BD54A3D323F312BC /* KeyboardTextReplacement.swift */,
+				7C11C5DF1892A203D605D182 /* KeyboardUIRegion.swift */,
+				32BBCEE9924D8C93E5BEB347 /* NonFatalLog.swift */,
+				F5E41D4F142B3791005B733B /* RewriteAPI.swift */,
+				5A79809FACB27992F0A849B6 /* SessionClient.swift */,
+				E863CB09E7C539671323053C /* SupabaseDeviceAPI.swift */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		8F080BF13C415B75DD5D9C9D /* AIKeyboard */ = {
+			isa = PBXGroup;
+			children = (
+				A92A017B272E690F14CADA4A /* AccountSync.swift */,
+				D172A50A2D0C5392EEA32E9A /* AIKeyboard.entitlements */,
+				C0081164527227648AB73FE7 /* AIKeyboardApp.swift */,
+				AECCE96AD799FBEC37C25FD0 /* AppDelegate.swift */,
+				AF6CC57C6DE806B1DC94D3F6 /* Assets.xcassets */,
+				E25E51E4E3487396100D50B9 /* ContentView.swift */,
+				273C85C958DE1257D27E9459 /* FeedbackReporter.swift */,
+				1A64EB3C508D12F4F5495578 /* FirebaseDeviceRegistry.swift */,
+				BA8D29743944B5A8AC67EE66 /* HostSupabaseConfigSync.swift */,
+				99933DB47AB7F595CC558A61 /* Info.plist */,
+				540540A13256B109A8814536 /* Resources */,
+			);
+			path = AIKeyboard;
+			sourceTree = "<group>";
+		};
+		B42C817EB1A388C575670655 /* KeyboardExtension */ = {
+			isa = PBXGroup;
+			children = (
+				4A0338C7A2E02C0C011C722A /* Info.plist */,
+				C9B04BACC2FA58203828D9AB /* KeyboardExtension.entitlements */,
+				7D1C42D2251BE3CD59E890D1 /* KeyboardLayoutView.swift */,
+				1E8DE75400C553EF057CBEA5 /* KeyboardViewController.swift */,
+				D0CACCEBA7277D7BC40D4E6E /* Resources */,
+			);
+			path = KeyboardExtension;
+			sourceTree = "<group>";
+		};
+		C106CCC1F1F38812DF1BBD45 /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				7A3FD5DBAE5330DE46875AD1 /* NotoColorEmoji.ttf */,
+				8E77B771B922F6E1E32D30F4 /* OFL-Noto-Emoji.txt */,
+			);
+			path = Fonts;
+			sourceTree = "<group>";
+		};
+		D0CACCEBA7277D7BC40D4E6E /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				C106CCC1F1F38812DF1BBD45 /* Fonts */,
+				C1DEADD90D3287B2EF0C5051 /* Localizable.strings */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		"TEMP_0D35BAD3-427A-4669-A307-5FD9C7F5B51A" /* ios-keyboard */ = {
+			isa = PBXGroup;
+			children = (
+				"TEMP_0A8200FD-A8F1-4FEE-9DDA-1359F09C610D" /* BaseDSYM.xcconfig */,
+			);
+			path = "ios-keyboard";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		1D0D052FDCA78E90F3C7922A /* AIKeyboard */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DF6A158DB6AE31EAE696E385 /* Build configuration list for PBXNativeTarget "AIKeyboard" */;
+			buildPhases = (
+				640E3BBC1C443EDEA6378766 /* Sources */,
+				6F39ED34606936BE7434A707 /* Resources */,
+				0BA5A447E6EDDFF7BBFED756 /* Frameworks */,
+				1EDAD8A47C5BE04C7CF29EDA /* Embed Foundation Extensions */,
+				771C2E8C9AE2220B9D9ABD07 /* Firebase Crashlytics dSYM */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				8D310AFC079B03F72B19A8D9 /* PBXTargetDependency */,
+			);
+			name = AIKeyboard;
+			packageProductDependencies = (
+				373419B6BB480B6C9B4A4639 /* FirebaseAnalytics */,
+				C12C6BA1047208E72FF1DB10 /* FirebaseCrashlytics */,
+				AA535E33424645E0B209E50F /* FirebaseFirestore */,
+				94D340D2E0D064A9E817FB8B /* FirebaseAuth */,
+			);
+			productName = AIKeyboard;
+			productReference = A85BE0E1E51B673193DE00C1 /* AIKeyboard.app */;
+			productType = "com.apple.product-type.application";
+		};
+		B99A06E22870E4E2C477DB80 /* AIKeyboardKeyboard */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7FFCFCAC7E179C28B9F92489 /* Build configuration list for PBXNativeTarget "AIKeyboardKeyboard" */;
+			buildPhases = (
+				B32A16252C3F8D4ABE0EA004 /* Sources */,
+				3446327A7BE32FFF5E518FBE /* Resources */,
+				5287CC8DBAA7C9B61B97D3D1 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AIKeyboardKeyboard;
+			packageProductDependencies = (
+				5D865863326DF451A6CB91A2 /* FirebaseCore */,
+				9D0BC05D9D2644B8420DC615 /* FirebaseCrashlytics */,
+			);
+			productName = AIKeyboardKeyboard;
+			productReference = 4721407E776A19D36C690CE2 /* AIKeyboardKeyboard.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		35C086F2C3EDCBAA44AC88EC /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					1D0D052FDCA78E90F3C7922A = {
+						ProvisioningStyle = Automatic;
+					};
+					B99A06E22870E4E2C477DB80 = {
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 828B75E2CF5213547895C3C1 /* Build configuration list for PBXProject "AIKeyboard" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+				tr,
+			);
+			mainGroup = 02F1AC7823F1C654DF2C51A3;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				9746075FC05F04BFE339C72C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 1DCB8402EB9C88F48EA3D4AB /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				1D0D052FDCA78E90F3C7922A /* AIKeyboard */,
+				B99A06E22870E4E2C477DB80 /* AIKeyboardKeyboard */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		3446327A7BE32FFF5E518FBE /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				46DBCE6EB0C42F9CD820EE9C /* Localizable.strings in Resources */,
+				5F19812DC96F317862B2EBBD /* NotoColorEmoji.ttf in Resources */,
+				24B4E421871E1904C343D006 /* OFL-Noto-Emoji.txt in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6F39ED34606936BE7434A707 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7EAB1F38170826AC237C7526 /* Assets.xcassets in Resources */,
+				61E05E0955187667F683BDCC /* Localizable.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		771C2E8C9AE2220B9D9ABD07 /* Firebase Crashlytics dSYM */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}",
+				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${PRODUCT_NAME}",
+				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Info.plist",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/GoogleService-Info.plist",
+				"$(TARGET_BUILD_DIR)/$(EXECUTABLE_PATH)",
+			);
+			name = "Firebase Crashlytics dSYM";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# TODO(Firebase): Remove early exit once GoogleService-Info.plist is in AIKeyboard/Resources (see ios-keyboard/README.md).\nPLIST=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/GoogleService-Info.plist\"\nif [ ! -f \"$PLIST\" ]; then\n  echo \"note: GoogleService-Info.plist missing — skipping Firebase Crashlytics run (local bypass)\"\n  exit 0\nfi\nCRASHLYTICS_RUN=\"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\"\nif [ ! -f \"$CRASHLYTICS_RUN\" ]; then exit 0; fi\n\"$CRASHLYTICS_RUN\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		640E3BBC1C443EDEA6378766 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C6C7359A4E43D1569354D82E /* AIKeyboardApp.swift in Sources */,
+				BE584131A5AE35A14FDD034D /* AccountSync.swift in Sources */,
+				5A0D6220F99A3B57BB7354C8 /* AppConfig.swift in Sources */,
+				C08D839AA133C6FAE897A49C /* AppConstants.swift in Sources */,
+				4735DE14275AECA2AF92B7FA /* AppDelegate.swift in Sources */,
+				FB4A551D32975FB84AFF673F /* AppGroupStore.swift in Sources */,
+				716E426CF73FCD1CA43C2A46 /* ContentView.swift in Sources */,
+				D914ED6B62266E5DD27B7CDC /* ConversationStyle.swift in Sources */,
+				4EAE5152A897917428719AD6 /* DeviceId.swift in Sources */,
+				85AB12F45F26C840CB9D33C4 /* FeedbackReporter.swift in Sources */,
+				810B69E746F802BADAAE27BD /* FirebaseDeviceRegistry.swift in Sources */,
+				919083527C93FDF9A5E9306D /* HMACAuth.swift in Sources */,
+				D788A3DAAEE437EAF7A10DC9 /* HostSupabaseConfigSync.swift in Sources */,
+				760BC2907B1DD9734AEFD0C6 /* KeyboardAppearancePreference.swift in Sources */,
+				A4C1A53B0156155F562A5292 /* KeyboardChromeAccent.swift in Sources */,
+				C0B648D429824967FD9963EE /* KeyboardTextReplacement.swift in Sources */,
+				228E597B8E33AF6EF318A328 /* KeyboardUIRegion.swift in Sources */,
+				92551A1CC1225F13D0322042 /* NonFatalLog.swift in Sources */,
+				8F89AF6E2BFDE4518862E115 /* RewriteAPI.swift in Sources */,
+				FABF9B25F32FEDE672998265 /* SessionClient.swift in Sources */,
+				FCBB72CC80A5F171440BA4FB /* SupabaseDeviceAPI.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B32A16252C3F8D4ABE0EA004 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CA87759C893ADD6820F1B576 /* AppConfig.swift in Sources */,
+				FEA45C2B3EFC9657D6B380AD /* AppConstants.swift in Sources */,
+				73C8B8169FFB8DB0426CD413 /* AppGroupStore.swift in Sources */,
+				63B012582128BB5127FC0D83 /* ConversationStyle.swift in Sources */,
+				70868333013E3C144B8AC4E2 /* DeviceId.swift in Sources */,
+				8B28DA6AE268AA8B03D2AF8F /* HMACAuth.swift in Sources */,
+				1231923280BEFCBEFD25197D /* KeyboardAppearancePreference.swift in Sources */,
+				36167ED5D53798E207ADE24D /* KeyboardChromeAccent.swift in Sources */,
+				F68A8D10394A4E6C016A5097 /* KeyboardLayoutView.swift in Sources */,
+				2B3760ECC4A2FC860EC224B1 /* KeyboardTextReplacement.swift in Sources */,
+				1072F8312649E91231471D4D /* KeyboardUIRegion.swift in Sources */,
+				FDC9B0DC418820BA23B59662 /* KeyboardViewController.swift in Sources */,
+				4F19102EAF30ABB316BEC1CC /* NonFatalLog.swift in Sources */,
+				1E82D06963E67B7CAD614730 /* RewriteAPI.swift in Sources */,
+				AA3977B8F7BECDE4B8E6A881 /* SessionClient.swift in Sources */,
+				51923AFCD20C66EE79F69F90 /* SupabaseDeviceAPI.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		8D310AFC079B03F72B19A8D9 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B99A06E22870E4E2C477DB80 /* AIKeyboardKeyboard */;
+			targetProxy = 25546EE35EE6929E325BA7E3 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		C1DEADD90D3287B2EF0C5051 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				099C9153F38C7E0D52EA7CBC /* en */,
+				14DC7DACE16C0148C92C90F3 /* tr */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+		EA1766DACEF9DD62CDD98977 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				5CEA54CC411756BA4B74A847 /* en */,
+				7A86496AD6D8166714031957 /* tr */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		0095FB51B3AE0CFECBFDB284 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = "TEMP_0A8200FD-A8F1-4FEE-9DDA-1359F09C610D" /* BaseDSYM.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = AIKeyboard/AIKeyboard.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				INFOPLIST_FILE = AIKeyboard/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.nativeaikeyboard.host;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		1C5592448A1B558280970731 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = "TEMP_0A8200FD-A8F1-4FEE-9DDA-1359F09C610D" /* BaseDSYM.xcconfig */;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = KeyboardExtension/KeyboardExtension.entitlements;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				INFOPLIST_FILE = KeyboardExtension/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.nativeaikeyboard.host.keyboard;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		3C002ADFD38BB5D8684A2FAF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = "TEMP_0A8200FD-A8F1-4FEE-9DDA-1359F09C610D" /* BaseDSYM.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = AIKeyboard/AIKeyboard.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				INFOPLIST_FILE = AIKeyboard/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.nativeaikeyboard.host;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		43D4C3F1C1E254C4C1F8FE3E /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = "TEMP_0A8200FD-A8F1-4FEE-9DDA-1359F09C610D" /* BaseDSYM.xcconfig */;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = KeyboardExtension/KeyboardExtension.entitlements;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				INFOPLIST_FILE = KeyboardExtension/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.nativeaikeyboard.host.keyboard;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		8DEECEFA2EA0C8433D51A63C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		A0DD49B08EE529BCB97580FC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		7FFCFCAC7E179C28B9F92489 /* Build configuration list for PBXNativeTarget "AIKeyboardKeyboard" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1C5592448A1B558280970731 /* Debug */,
+				43D4C3F1C1E254C4C1F8FE3E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		828B75E2CF5213547895C3C1 /* Build configuration list for PBXProject "AIKeyboard" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A0DD49B08EE529BCB97580FC /* Debug */,
+				8DEECEFA2EA0C8433D51A63C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		DF6A158DB6AE31EAE696E385 /* Build configuration list for PBXNativeTarget "AIKeyboard" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3C002ADFD38BB5D8684A2FAF /* Debug */,
+				0095FB51B3AE0CFECBFDB284 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		9746075FC05F04BFE339C72C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		373419B6BB480B6C9B4A4639 /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9746075FC05F04BFE339C72C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		5D865863326DF451A6CB91A2 /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9746075FC05F04BFE339C72C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
+		};
+		94D340D2E0D064A9E817FB8B /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9746075FC05F04BFE339C72C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		9D0BC05D9D2644B8420DC615 /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9746075FC05F04BFE339C72C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCrashlytics;
+		};
+		AA535E33424645E0B209E50F /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9746075FC05F04BFE339C72C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+		C12C6BA1047208E72FF1DB10 /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9746075FC05F04BFE339C72C /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCrashlytics;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 35C086F2C3EDCBAA44AC88EC /* Project object */;
+}

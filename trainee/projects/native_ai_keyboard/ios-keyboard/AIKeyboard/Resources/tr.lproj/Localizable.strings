@@ -1,0 +1,58 @@
+"help.section.keyboard" = "Mesajlarda klavye neden görünmüyor?";
+"help.keyboard.intro" = "iPhone, yeni bir klavyeyi kendiliğinden açmaz. Aşağıdaki adımlar gerekir.";
+"help.keyboard.step1" = "1) AI Klavye uygulamasını telefonda en az bir kez açın (klavye uzantısı bu uygulamayla yüklenir).";
+"help.keyboard.step2" = "2) Ayarlar → Genel → Klavye → Klavyeler → Klavye Ekle → listeden “AI Keyboard”u seçün.";
+"help.keyboard.step3" = "3) Klavyeler listesinde “AI Keyboard”a dokunun → Tam Erişime İzin Ver’i açın (AI için şart).";
+"help.keyboard.step4" = "4) Mesajlar’da yazarken sol alttaki klavye değiştirme tuşuna basın (çoğu iPhone’da dünya simgesi). Klavyeler arasında geçip “AI Keyboard” gelene kadar tekrarlayın. Varsayılan her zaman Apple klavyesidir.";
+
+"help.section.ai" = "Yapay zekâ (Supabase)";
+"help.ai.intro" = "«Yeniden yaz» Supabase Edge projenize gider. Bu sürümde uygulama içi abonelik yok.";
+"help.ai.step1" = "1) Bu uygulamanın Info.plist’inde SupabaseProjectURL’i proje kökünüze yazın, örn. https://PROJE_REF.supabase.co (sonunda /functions/v1 olmasın).";
+"help.ai.step2" = "2) Bu uygulamayı bir kez açıp «Oturumu yenile» deyin; böylece URL ve cihaz jetonu klavye ile paylaşılır.";
+"help.ai.step3" = "3) Klavye için Tam Erişim açık kalsın — aksi halde ağ istekleri başarısız olur.";
+
+"app.title" = "AI Klavye";
+"settings.conversation_style" = "Konuşma biçimi";
+"settings.section.style" = "Yazım";
+"settings.ai_preview_toggle" = "Öneriyi klavyede önizle";
+"settings.ai_preview_footer" = "Açıkken önce klavyede öneri görünür; Uygula ile mesaja aktarılır. Kapalıyken metin alanı hemen güncellenir.";
+"settings.section.account" = "Bağlantı";
+"settings.sync_account" = "Oturumu ve cihazı yenile";
+"settings.status.session_ok" = "Hazır — klavye Supabase’i çağırabilir (cihaz kaydı tamam).";
+"settings.status.session_fail" = "Kurulum tamamlanamadı. SupabaseProjectURL, ağ ve Edge sırlarını kontrol edin.";
+"settings.open_keyboard_settings" = "Klavye ayarlarını aç";
+"action.done" = "Tamam";
+"action.cancel" = "Vazgeç";
+
+"style.formal" = "Resmi";
+"style.work" = "İş";
+"style.friends" = "Arkadaş";
+"style.family" = "Aile";
+"style.flirt" = "Flört (SFW)";
+
+"appearance.section_title" = "Klavye teması";
+"appearance.section_footer" = "Özel klavye için: açık/koyu (veya sistem) ve yapay zekâ vurgularında kullanılan renk.";
+"appearance.system" = "Sisteme uy";
+"appearance.light" = "Açık";
+"appearance.dark" = "Koyu";
+
+"accent.section_title" = "Vurgu rengi";
+"accent.systemBlue" = "Sistem mavisi";
+"accent.teal" = "Turkuaz";
+"accent.green" = "Yeşil";
+"accent.orange" = "Turuncu";
+"accent.purple" = "Mor";
+"accent.pink" = "Pembe";
+
+"feedback.open_report" = "Sorun bildir";
+"feedback.sheet.title" = "Sorun bildir";
+"feedback.sheet.footer" = "Günde yalnızca bir bildirim gönderebilirsiniz.";
+"feedback.submit" = "Gönder";
+"feedback.submitting" = "Gönderiliyor…";
+"feedback.sent" = "Teşekkürler — bildiriminiz alındı.";
+"feedback.error.too_short" = "Lütfen en az 10 karakter yazın.";
+"feedback.error.rate_limited" = "Günde yalnızca bir sorun bildirimi gönderebilirsiniz. Yarın tekrar deneyin.";
+"feedback.error.firebase_off" = "Bildirim kullanılamıyor (Firebase yapılandırılmadı).";
+"feedback.error.not_signed_in" = "Anonim oturum açılamadı. Firebase Authentication’da Anonim girişi açıp yeniden deneyin.";
+"feedback.error.firestore_permission.title" = "Firestore yazmayı reddetti.";
+"feedback.error.firestore_permission.detail" = "Kontrol listesi:\n\n1) Authentication → Sign-in method → Anonim → AÇIK\n\n2) Firestore → Rules → repodaki ios/firestore.rules.example dosyasının tamamını yapıştır → Yayınla\n\n3) Firestore → App Check: Firestore için zorunluluk açıksa bu iOS uygulamasını kaydet veya testte kapat\n\n4) GoogleService-Info.plist ile Firestore aynı Firebase projesinde olmalı";

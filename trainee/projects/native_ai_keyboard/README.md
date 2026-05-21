@@ -7,6 +7,7 @@ This directory holds **app code** and the **Supabase** project (migrations, Edge
 | [`supabase/`](./supabase/README.md) | CLI project: `migrations/`, `functions/`, optional `seed/`, `schemas/` |
 | `android-keyboard/` | Kotlin IME (Days 04–07) when added |
 | `ios-keyboard/` | Swift host + extension (Days 08–12) when added |
-| [`examples/`](./examples/README.md) | Non-secret `.env.example` templates for local setup |
+| [`.env.example`](./.env.example) | **All** env variable names (copy → `.env`, gitignored) |
+| [`examples/`](./examples/README.md) | Extra templates + `supabase functions serve` hints |
 
 Do not commit real API keys or `GoogleService-Info.plist` (see `.gitignore`).

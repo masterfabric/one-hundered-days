@@ -1,0 +1,58 @@
+"help.section.keyboard" = "Why doesn’t the keyboard show in Messages?";
+"help.keyboard.intro" = "iOS never auto-selects a new third-party keyboard. Follow these steps.";
+"help.keyboard.step1" = "1) Open the AI Keyboard app on your device at least once (the extension installs with the app).";
+"help.keyboard.step2" = "2) Settings → General → Keyboard → Keyboards → Add New Keyboard → choose “AI Keyboard”.";
+"help.keyboard.step3" = "3) Tap “AI Keyboard” in the list → turn on Allow Full Access (required for AI and session).";
+"help.keyboard.step4" = "4) In Messages, tap the keyboard switcher in the bottom-left (often a globe icon). Cycle keyboards until “AI Keyboard” appears. The default is always Apple’s keyboard.";
+
+"help.section.ai" = "AI (Supabase)";
+"help.ai.intro" = "“Rewrite” calls your Supabase Edge project. No subscription in this build.";
+"help.ai.step1" = "1) In this app’s Info (or build settings), set SupabaseProjectURL to your project root, e.g. https://YOUR_REF.supabase.co (no /functions/v1).";
+"help.ai.step2" = "2) Open this app once and tap “Refresh session & device” so the URL and device token are saved for the keyboard.";
+"help.ai.step3" = "3) Keep Allow Full Access enabled for the keyboard — otherwise network requests fail.";
+
+"app.title" = "AI Keyboard";
+"settings.conversation_style" = "Conversation style";
+"settings.section.style" = "Writing";
+"settings.ai_preview_toggle" = "Preview AI result on keyboard";
+"settings.ai_preview_footer" = "When on, the keyboard shows the suggestion first; tap Apply to insert. When off, the field updates immediately.";
+"settings.section.account" = "Connection";
+"settings.sync_account" = "Refresh session & device";
+"settings.status.session_ok" = "Ready — keyboard can call Supabase (device registered).";
+"settings.status.session_fail" = "Could not finish setup. Check SupabaseProjectURL, network, and Edge secrets.";
+"settings.open_keyboard_settings" = "Open Keyboard settings";
+"action.done" = "Done";
+"action.cancel" = "Cancel";
+
+"style.formal" = "Formal";
+"style.work" = "Work";
+"style.friends" = "Friends";
+"style.family" = "Family";
+"style.flirt" = "Flirty (SFW)";
+
+"appearance.section_title" = "Keyboard theme";
+"appearance.section_footer" = "Applies to the custom keyboard: light/dark (or system) and the accent used for AI highlights.";
+"appearance.system" = "Match system";
+"appearance.light" = "Light";
+"appearance.dark" = "Dark";
+
+"accent.section_title" = "Accent color";
+"accent.systemBlue" = "System blue";
+"accent.teal" = "Teal";
+"accent.green" = "Green";
+"accent.orange" = "Orange";
+"accent.purple" = "Purple";
+"accent.pink" = "Pink";
+
+"feedback.open_report" = "Report a problem";
+"feedback.sheet.title" = "Report a problem";
+"feedback.sheet.footer" = "You can send only one report per calendar day.";
+"feedback.submit" = "Send";
+"feedback.submitting" = "Sending…";
+"feedback.sent" = "Thanks — we received your report.";
+"feedback.error.too_short" = "Please write at least 10 characters.";
+"feedback.error.rate_limited" = "You can send one report per day. Try again tomorrow.";
+"feedback.error.firebase_off" = "Reporting is unavailable (Firebase not configured).";
+"feedback.error.not_signed_in" = "Could not sign in anonymously. Check Firebase Authentication (Anonymous) and try again.";
+"feedback.error.firestore_permission.title" = "Firestore refused the write.";
+"feedback.error.firestore_permission.detail" = "Checklist:\n\n1) Authentication → Sign-in method → Anonymous → ON\n\n2) Firestore → Rules → paste the entire ios/firestore.rules.example file from this repo → Publish\n\n3) Firestore → App Check: if Firestore enforcement is ON, register this iOS app or turn enforcement off while testing\n\n4) GoogleService-Info.plist must be from the same Firebase project as the database";
