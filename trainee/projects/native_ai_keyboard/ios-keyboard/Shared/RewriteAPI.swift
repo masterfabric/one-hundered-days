@@ -120,7 +120,7 @@ enum RewriteAPI {
 
         let keyboardLocale =
             AppGroupStore.shared.aiWritingLocaleIfSet
-            ?? KeyboardUIRegion.resolved(from: AppGroupStore.shared.keyboardUIRegionRaw).stringsLanguageCode
+            ?? KeyboardUIRegion.inferredFromPreferredLanguages().stringsLanguageCode
         let deviceLocales = Locale.preferredLanguages.prefix(4).joined(separator: ", ")
 
         let themeRaw = AppGroupStore.shared.keyboardAppearancePreference.rawValue
@@ -244,12 +244,6 @@ enum RewriteAPI {
     static func rewrite(text: String, mode: RewriteMode, style: ConversationStyle) async throws -> String {
         do {
             if AppConfig.usesSupabaseTransform {
-                if mode != .rewrite {
-                    throw RewriteAPIError.badStatus(
-                        400,
-                        "Şimdilik sadece «Yeniden yaz» Supabase üzerinde. Diğer eylemler yakında.",
-                    )
-                }
                 return try await supabaseTransform(text: text, mode: mode, style: style)
             }
             return try await legacyNodeRewrite(text: text, mode: mode, style: style)

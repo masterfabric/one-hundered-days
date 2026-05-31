@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
-import { buildRewriteSystemPrompt, wrapUserText } from "../_shared/rewritePrompt.ts";
+import { buildSystemPromptForAction, wrapUserText } from "../_shared/rewritePrompt.ts";
 
 const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
@@ -14,7 +14,7 @@ function json(body: unknown, status = 200) {
   });
 }
 
-const allowedActions = new Set(["rewrite"]);
+const allowedActions = new Set(["rewrite", "correct", "shorten", "expand"]);
 
 async function verifyDeviceToken(
   authHeader: string | null,
@@ -127,11 +127,14 @@ Deno.serve(async (req) => {
     }
     if (!allowedActions.has(action)) {
       return json({
-        error: { code: "INVALID_INPUT", message: "Only action=rewrite is enabled in this MVP" },
+        error: {
+          code: "INVALID_INPUT",
+          message: "action must be one of: rewrite, correct, shorten, expand",
+        },
       }, 400);
     }
 
-    const system = buildRewriteSystemPrompt(style);
+    const system = buildSystemPromptForAction(action, style);
     const userBlock = wrapUserText(text, deviceLocales, locale);
 
     const result = await callGemini(system, userBlock);

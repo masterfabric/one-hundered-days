@@ -19,6 +19,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
         HostSupabaseConfigSync.pushToAppGroupIfNeeded()
+        AppGroupStore.shared.purgeLegacyKeyboardUIRegionIfPresent()
         FirebaseDeviceRegistry.configureAtLaunch()
 
         #if targetEnvironment(simulator)

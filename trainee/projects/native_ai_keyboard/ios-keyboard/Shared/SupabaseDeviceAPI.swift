@@ -35,7 +35,7 @@ enum SupabaseDeviceAPI {
         req.timeoutInterval = 60
 
         let loc = AppGroupStore.shared.aiWritingLocaleIfSet
-            ?? KeyboardUIRegion.resolved(from: AppGroupStore.shared.keyboardUIRegionRaw).stringsLanguageCode
+            ?? KeyboardUIRegion.inferredFromPreferredLanguages().stringsLanguageCode
         let body = RegisterBody(deviceId: DeviceId.idfv, platform: "ios", locale: loc)
         req.httpBody = try JSONEncoder().encode(body)
 

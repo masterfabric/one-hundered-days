@@ -171,6 +171,11 @@ final class KeyboardLayoutView: UIView {
         }
     }
 
+    /// Call when iOS preferred languages may have changed (e.g. after visiting Settings) so toolbar strings refresh.
+    func refreshChromeStringsFromAppGroup() {
+        syncRegionChrome()
+    }
+
     func applyAppearance(traits: UITraitCollection) {
         let isDark = traits.userInterfaceStyle == .dark
         backgroundColor = isDark ? Self.keyGrayDark : Self.keyGrayLight
@@ -226,20 +231,10 @@ final class KeyboardLayoutView: UIView {
         b.layer.borderColor = isDark ? nil : UIColor(white: 0.78, alpha: 1).cgColor
     }
 
-    // MARK: - Strings (follow system UI language, not the text field’s keyboard locale)
-
-    /// Uses `Locale.preferredLanguages` (Settings → General → Language & Region). Do **not** use `Locale.current` here: in extensions it often tracks the **input** keyboard / field locale, so English UI + Turkish typing wrongly picked `tr`.
-    private static func preferredKeyboardStringsLanguageCode() -> String {
-        for id in Locale.preferredLanguages where !id.isEmpty {
-            let low = id.lowercased()
-            if low.hasPrefix("tr") { return "tr" }
-            if low.hasPrefix("en") { return "en" }
-        }
-        return "en"
-    }
+    // MARK: - Strings (Language & Region + typing locale: non-English preferred before English in the merged list)
 
     private func kbString(_ key: String) -> String {
-        let code = Self.preferredKeyboardStringsLanguageCode()
+        let code = AppGroupStore.shared.keyboardChromeStringsLanguageCode
         let main = Bundle(for: KeyboardLayoutView.self)
         if let path = main.path(forResource: code, ofType: "lproj"),
            let b = Bundle(path: path)
@@ -879,7 +874,7 @@ final class KeyboardLayoutView: UIView {
             lp.minimumPressDuration = 0.38
             lp.cancelsTouchesInView = true
             b.addGestureRecognizer(lp)
-            let region = KeyboardUIRegion.resolved(from: AppGroupStore.shared.keyboardUIRegionRaw)
+            let region = KeyboardUIRegion.inferredFromPreferredLanguages()
             b.accessibilityHint = region.alternates(forBaseLetter: ch).isEmpty
                 ? nil
                 : kbString("keyboard.accessibility_alternates_hint")
@@ -985,7 +980,7 @@ final class KeyboardLayoutView: UIView {
               let btn = g.view as? UIButton, let id = btn.accessibilityIdentifier, id.hasPrefix("kb_") else { return }
         let suf = String(id.dropFirst(3))
         guard suf.count == 1, let ch = suf.lowercased().first else { return }
-        let region = KeyboardUIRegion.resolved(from: AppGroupStore.shared.keyboardUIRegionRaw)
+        let region = KeyboardUIRegion.inferredFromPreferredLanguages()
         let alts = region.alternates(forBaseLetter: ch)
         guard !alts.isEmpty else { return }
 

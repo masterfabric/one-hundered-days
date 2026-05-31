@@ -47,7 +47,9 @@ final class KeyboardViewController: UIInputViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        AppGroupStore.shared.purgeLegacyKeyboardUIRegionIfPresent()
         applyKeyboardAppearancePreference()
+        layoutView?.refreshChromeStringsFromAppGroup()
     }
 
     /// Reads App Group appearance (set in host app or from keyboard theme control).
@@ -243,11 +245,7 @@ final class KeyboardViewController: UIInputViewController {
 
     func presentStylePicker(sourceView: UIView, onPick: @escaping (ConversationStyle) -> Void) {
         let kb = Bundle(for: KeyboardViewController.self)
-        let langCode: String = {
-            let p = Locale.preferredLanguages.first ?? "en"
-            if p.hasPrefix("tr") { return "tr" }
-            return "en"
-        }()
+        let langCode = AppGroupStore.shared.keyboardChromeStringsLanguageCode
         let stringsBundle: Bundle = {
             if let path = kb.path(forResource: langCode, ofType: "lproj"),
                let b = Bundle(path: path)

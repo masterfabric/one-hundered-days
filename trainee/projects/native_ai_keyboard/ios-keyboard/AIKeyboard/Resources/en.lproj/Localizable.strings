@@ -5,12 +5,6 @@
 "help.keyboard.step3" = "3) Tap “AI Keyboard” in the list → turn on Allow Full Access (required for AI and session).";
 "help.keyboard.step4" = "4) In Messages, tap the keyboard switcher in the bottom-left (often a globe icon). Cycle keyboards until “AI Keyboard” appears. The default is always Apple’s keyboard.";
 
-"help.section.ai" = "AI (Supabase)";
-"help.ai.intro" = "“Rewrite” calls your Supabase Edge project. No subscription in this build.";
-"help.ai.step1" = "1) In this app’s Info (or build settings), set SupabaseProjectURL to your project root, e.g. https://YOUR_REF.supabase.co (no /functions/v1).";
-"help.ai.step2" = "2) Open this app once and tap “Refresh session & device” so the URL and device token are saved for the keyboard.";
-"help.ai.step3" = "3) Keep Allow Full Access enabled for the keyboard — otherwise network requests fail.";
-
 "app.title" = "AI Keyboard";
 "settings.conversation_style" = "Conversation style";
 "settings.section.style" = "Writing";
@@ -31,7 +25,7 @@
 "style.flirt" = "Flirty (SFW)";
 
 "appearance.section_title" = "Keyboard theme";
-"appearance.section_footer" = "Applies to the custom keyboard: light/dark (or system) and the accent used for AI highlights.";
+"appearance.section_footer" = "Applies to the custom keyboard: light/dark (or system) and the accent used for AI highlights. AI toolbar titles (Rewrite, Shorten, …) use Turkish (or German/French/Spanish) if that language is enabled under Settings → General → Language & Region — even when English stays above it — and match the typing context when possible.";
 "appearance.system" = "Match system";
 "appearance.light" = "Light";
 "appearance.dark" = "Dark";

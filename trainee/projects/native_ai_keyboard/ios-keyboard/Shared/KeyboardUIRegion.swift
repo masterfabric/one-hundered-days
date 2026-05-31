@@ -1,6 +1,6 @@
 import Foundation
 
-/// Region for keyboard chrome (labels + diacritic priority). Stored in App Group.
+/// Region for keyboard chrome (labels + diacritic priority). Derived from **Language & Region** plus `Locale.current` (typing / field context in the extension).
 enum KeyboardUIRegion: String, CaseIterable {
     case turkey
     case unitedStates
@@ -8,17 +8,6 @@ enum KeyboardUIRegion: String, CaseIterable {
     case germany
     case france
     case spain
-
-    var flagEmoji: String {
-        switch self {
-        case .turkey: return "🇹🇷"
-        case .unitedStates: return "🇺🇸"
-        case .unitedKingdom: return "🇬🇧"
-        case .germany: return "🇩🇪"
-        case .france: return "🇫🇷"
-        case .spain: return "🇪🇸"
-        }
-    }
 
     /// Preferred .lproj folder for keyboard strings (fallback to en).
     var stringsLanguageCode: String {
@@ -42,14 +31,42 @@ enum KeyboardUIRegion: String, CaseIterable {
         }
     }
 
-    static var defaultRawForAppGroup: String {
-        let p = Locale.preferredLanguages.first ?? "en"
-        if p.hasPrefix("tr") { return KeyboardUIRegion.turkey.rawValue }
-        return KeyboardUIRegion.unitedStates.rawValue
-    }
+    /// Picks toolbar / alternates / default AI locale. **Non-English** languages in the candidate list match **before** English, so `["en", "tr"]` in Language & Region still yields Turkish chrome when Turkish is enabled.
+    /// `currentLocale` is usually `Locale.current` (keyboard extension: often follows the field or active typing language).
+    static func inferredFromPreferredLanguages(
+        _ preferredLanguages: [String] = Locale.preferredLanguages,
+        currentLocale: Locale = .current
+    ) -> KeyboardUIRegion {
+        var candidates: [String] = []
+        candidates.append(currentLocale.identifier)
+        if #available(iOS 16, *) {
+            if let bid = currentLocale.language.languageCode?.identifier, !bid.isEmpty {
+                candidates.append(bid)
+            }
+        }
+        candidates.append(contentsOf: preferredLanguages)
 
-    static func resolved(from raw: String) -> KeyboardUIRegion {
-        KeyboardUIRegion(rawValue: raw) ?? .unitedStates
+        var seen = Set<String>()
+        let merged = candidates.filter { raw in
+            let t = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !t.isEmpty else { return false }
+            if seen.contains(t) { return false }
+            seen.insert(t)
+            return true
+        }
+
+        for id in merged {
+            let low = id.lowercased()
+            if low.hasPrefix("tr") { return .turkey }
+            if low.hasPrefix("de") { return .germany }
+            if low.hasPrefix("fr") { return .france }
+            if low.hasPrefix("es") { return .spain }
+        }
+        for id in merged {
+            let low = id.lowercased()
+            if low.hasPrefix("en") { return .unitedStates }
+        }
+        return .unitedStates
     }
 
     /// iOS-style alternate characters for long-press (lowercase base letter).

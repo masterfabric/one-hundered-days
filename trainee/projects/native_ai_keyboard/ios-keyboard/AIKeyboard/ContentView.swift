@@ -8,7 +8,6 @@ struct ContentView: View {
     @State private var status: String = ""
     @State private var isSyncing = false
     @State private var showReportProblem = false
-    @State private var aiWritingTag: String = AppGroupStore.shared.aiWritingLocaleIfSet ?? "auto"
 
     var body: some View {
         NavigationStack {
@@ -29,20 +28,6 @@ struct ContentView: View {
                 }
 
                 Section {
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text(String(localized: "help.ai.intro"))
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                        Text(String(localized: "help.ai.step1"))
-                        Text(String(localized: "help.ai.step2"))
-                        Text(String(localized: "help.ai.step3"))
-                    }
-                    .padding(.vertical, 4)
-                } header: {
-                    Text(String(localized: "help.section.ai"))
-                }
-
-                Section {
                     Picker(String(localized: "settings.conversation_style"), selection: $style) {
                         ForEach(ConversationStyle.allCases) { s in
                             Text(LocalizedStringKey(s.localizationKey)).tag(s)
@@ -50,21 +35,6 @@ struct ContentView: View {
                     }
                     .onChange(of: style) { _, new in
                         AppGroupStore.shared.conversationStyle = new
-                    }
-                    Picker("AI yazım dili", selection: $aiWritingTag) {
-                        Text("Klavye bölgesi (otomatik)").tag("auto")
-                        Text("Türkçe (tr)").tag("tr")
-                        Text("English (en)").tag("en")
-                        Text("Deutsch (de)").tag("de")
-                        Text("Français (fr)").tag("fr")
-                        Text("Español (es)").tag("es")
-                    }
-                    .onChange(of: aiWritingTag) { _, new in
-                        if new == "auto" {
-                            AppGroupStore.shared.aiWritingLocaleIfSet = nil
-                        } else {
-                            AppGroupStore.shared.aiWritingLocaleIfSet = new
-                        }
                     }
 
                     Toggle(String(localized: "settings.ai_preview_toggle"), isOn: $aiPreviewBeforeApply)
@@ -122,10 +92,10 @@ struct ContentView: View {
             }
             .navigationTitle(Text("app.title", bundle: .main))
             .onAppear {
+                AppGroupStore.shared.purgeLegacyKeyboardUIRegionIfPresent()
                 aiPreviewBeforeApply = AppGroupStore.shared.aiPreviewBeforeApply
                 appearance = AppGroupStore.shared.keyboardAppearancePreference
                 chromeAccent = AppGroupStore.shared.keyboardChromeAccent
-                aiWritingTag = AppGroupStore.shared.aiWritingLocaleIfSet ?? "auto"
             }
             .task {
                 await refresh()

@@ -3,7 +3,7 @@
 Implement handlers here, for example:
 
 - `register-device/` — device registration; returns opaque `deviceToken`
-- `transform/` — Gemini transform; requires `Authorization: Bearer <deviceToken>`
+- `transform/` — Gemini transform (`action`: `rewrite`, `correct` / improve, `shorten`, `expand`); requires `Authorization: Bearer <deviceToken>`
 
 Deploy:
 

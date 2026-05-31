@@ -20,8 +20,6 @@ final class AppGroupStore {
         static let apiBaseURLString = "api_base_url_override"
         /// When true, AI result shows on keyboard first; user taps Apply to insert. When false, insert immediately.
         static let aiPreviewBeforeApply = "ai_preview_before_apply"
-        /// Keyboard extension UI region (flag picker); drives labels + alternate characters priority.
-        static let keyboardUIRegion = "keyboard_ui_region"
         /// `system` | `light` | `dark` — extension + host read/write.
         static let keyboardAppearance = "keyboard_appearance_preference"
         /// Accent color preset for toolbar / AI highlights (`KeyboardChromeAccent` raw).
@@ -30,7 +28,7 @@ final class AppGroupStore {
         static let issueReportLastSubmittedAt = "issue_report_last_submitted_at"
         /// Opaque Bearer from Supabase `register-device` for `transform` calls.
         static let deviceTransformToken = "device_transform_token"
-        /// Short locale for AI (`tr`, `en`, …). Empty = derive from keyboard region.
+        /// Short locale for AI (`tr`, `en`, …). Empty = derive from iOS preferred languages (same as keyboard chrome).
         static let aiWritingLocale = "ai_writing_locale"
         /// Copied from host `Info.plist` (`SupabaseProjectURL`) so the keyboard `.appex` can call Supabase without its own copy.
         static let supabaseProjectURL = "supabase_project_url"
@@ -118,17 +116,16 @@ final class AppGroupStore {
         }
     }
 
-    /// Stored raw value of `KeyboardUIRegion` (keyboard extension).
-    var keyboardUIRegionRaw: String {
-        get {
-            let s = defaults?.string(forKey: Keys.keyboardUIRegion)
-            if let s, !s.isEmpty { return s }
-            return KeyboardUIRegion.defaultRawForAppGroup
-        }
-        set {
-            defaults?.set(newValue, forKey: Keys.keyboardUIRegion)
-            defaults?.synchronize()
-        }
+    /// `tr` / `en` / … for keyboard `.lproj` strings. Uses `Locale.current` plus **Language & Region**; any Turkish/German/French/Spanish in that list wins before English.
+    var keyboardChromeStringsLanguageCode: String {
+        KeyboardUIRegion.inferredFromPreferredLanguages().stringsLanguageCode
+    }
+
+    /// Removes legacy `keyboard_ui_region` from the App Group. Older app builds wrote a fixed region so changing iOS language did not update toolbar labels.
+    func purgeLegacyKeyboardUIRegionIfPresent() {
+        guard let d = defaults, d.object(forKey: "keyboard_ui_region") != nil else { return }
+        d.removeObject(forKey: "keyboard_ui_region")
+        d.synchronize()
     }
 
     func isSessionValid(now: Date = .init()) -> Bool {
