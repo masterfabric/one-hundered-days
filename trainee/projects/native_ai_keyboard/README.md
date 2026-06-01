@@ -9,6 +9,6 @@ This directory holds **app code** and the **Supabase** project (migrations, Edge
 | `ios-keyboard/` | Swift host + extension (Days 08–12) when added |
 | [`.env.example`](./.env.example) | **All** env variable names (copy → `.env`, gitignored) |
 | [`examples/`](./examples/README.md) | Extra templates + `supabase functions serve` hints |
-| [`docs/OPEN_ISSUES.md`](./docs/OPEN_ISSUES.md) | Bilinen açık konular (ör. Resend mail teslimi) |
+| [`docs/OPEN_ISSUES.md`](./docs/OPEN_ISSUES.md) | Known open items (e.g. Resend delivery) |
 
 Do not commit real API keys or `GoogleService-Info.plist` (see `.gitignore`).

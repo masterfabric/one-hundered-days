@@ -1,33 +1,33 @@
 # Open issues (native_ai_keyboard)
 
-Bilinen, henüz kapatılmamış veya takip edilmesi gereken konular. Kapatıldığında maddeyi güncelle veya bu dosyadan kaldır.
+Known items that are not closed yet. Update or remove an entry when resolved.
 
 ---
 
-## 1. Sorun bildirimi: Resend e-postası gelmiyor (DB kaydı oluşuyor)
+## 1. Issue reports: Resend email not delivered (DB row is created)
 
-**Durum:** Açık — `issue_reports` satırı oluşuyor; Edge yanıtında `mailSent` / `mailDetail` veya Resend tarafında teslimat net değil.
+**Status:** Open — `issue_reports` rows insert successfully; `mailSent` / `mailDetail` in the Edge response or Resend delivery is still unclear.
 
-**Olası nedenler (kontrol listesi):**
+**Likely causes (checklist):**
 
-- Supabase **Edge Secrets:** `RESEND_API_KEY`, `REPORT_TO_EMAIL` tanımlı mı? (`supabase secrets list`)
-- **`onboarding@resend.dev`** (varsayılan `RESEND_FROM`) ile Resend çoğu senaryoda yalnızca **Resend hesabı e-postasına** teslim eder; `REPORT_TO_EMAIL` farklıysa kutuda görünmeyebilir.
-- Kalıcı çözüm: Resend’de **domain doğrulama** + `RESEND_FROM` olarak o domainden adres.
-- Spam / Promotions; Resend **Dashboard → Emails / Logs**.
+- Supabase **Edge secrets:** are `RESEND_API_KEY` and `REPORT_TO_EMAIL` set? (`supabase secrets list`)
+- With **`onboarding@resend.dev`** (default `RESEND_FROM`), Resend often delivers only to the **email used to sign up for Resend**; if `REPORT_TO_EMAIL` differs, the inbox may stay empty.
+- Durable fix: **verify a domain** in Resend and set **`RESEND_FROM`** to an address on that domain.
+- Check spam / Promotions; Resend **Dashboard → Emails / Logs**.
 
-**Teknik referans:**
+**Technical references:**
 
-- Edge: [`supabase/functions/submit-issue-report/index.ts`](../supabase/functions/submit-issue-report/index.ts) — `mailDetail`, `console.log` / `console.warn` logları.
-- Dokümantasyon: [`supabase/functions/README.md`](../supabase/functions/README.md) (Secrets + “Mail gelmiyorsa”).
+- Edge: [`supabase/functions/submit-issue-report/index.ts`](../supabase/functions/submit-issue-report/index.ts) — `mailDetail`, `console.log` / `console.warn` logs.
+- Docs: [`supabase/functions/README.md`](../supabase/functions/README.md) (secrets + troubleshooting).
 
-**Sonraki adımlar (isteğe bağlı):**
+**Optional follow-ups:**
 
-- [ ] `REPORT_TO_EMAIL`’i Resend kayıt e-postası ile eşleştirip bir rapor daha dene.
-- [ ] Domain + `RESEND_FROM` ile uçtan uca doğrula.
-- [ ] İstenirse: uygulama içinde başarılı cevapta `mailSent == false` iken kullanıcıya kısa bilgi (şu an yalnızca DB güvencesi var).
+- [ ] Set `REPORT_TO_EMAIL` to the Resend account email and submit another report.
+- [ ] Verify domain + `RESEND_FROM` end to end.
+- [ ] Optionally surface a short in-app hint when HTTP 201 succeeds but `mailSent` is false (today only DB persistence is guaranteed).
 
 ---
 
-## Yeni madde eklerken
+## Adding a new entry
 
-Kısa başlık, durum (Açık / İzleniyor), gözlemlenen davranış, ilgili dosya yolu ve bir kontrol listesi yeterli.
+Use a short title, status (Open / Watching), observed behavior, relevant file paths, and a small checklist.

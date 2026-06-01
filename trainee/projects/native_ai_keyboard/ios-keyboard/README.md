@@ -56,11 +56,11 @@ The host app includes **Firebase Crashlytics**, **Google Analytics for Firebase*
 **Testing another report the same day:** In **`AIKeyboard/Info.plist`**, **`AIKeyboardIssueReportBypassDailyLimit`** is set to **`true`** for development so the local daily cap is off (orange test banner in the sheet). For the **server** UTC limit, run `supabase secrets set ISSUE_REPORT_BYPASS_UTC_RATE_LIMIT=true` and redeploy `submit-issue-report` — see [`../supabase/README.md`](../supabase/README.md). Hint script from monorepo root: `./trainee/projects/native_ai_keyboard/supabase/scripts/dev-issue-report-test-hints.sh`. **Turn both off before production / App Store.**
 - Log Analytics event **`entitlement_snapshot`** and user properties `device_id`, `entitlement_active` for dashboards.
 
-### Manual QA: Sorun bildirimi (gerçek cihaz)
+### Manual QA: Report a problem (device)
 
 1. **Supabase** — `supabase db push`, deploy `submit-issue-report`, set secrets as in [`../supabase/README.md`](../supabase/README.md) (issue reports section) and [`../supabase/functions/README.md`](../supabase/functions/README.md).
 2. **Host app** — `SupabaseProjectURL` in `Info.plist` points at your project; open the host once so the keyboard extension picks up config from the App Group.
-3. In the app, use **Sorun bildir** / **Report a problem**, enter at least 10 characters, submit.
+3. In the app, open **Report a problem**, enter at least 10 characters, submit.
 4. **Dashboard → SQL** — confirm a row:
 
    ```sql
