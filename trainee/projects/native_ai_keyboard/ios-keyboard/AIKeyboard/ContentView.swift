@@ -1,32 +1,23 @@
 import SwiftUI
+import UIKit
 import WebKit
 
 struct ContentView: View {
+    @Environment(\.scenePhase) private var scenePhase
+
     @State private var style: ConversationStyle = AppGroupStore.shared.conversationStyle
     @State private var appearance: KeyboardAppearancePreference = AppGroupStore.shared.keyboardAppearancePreference
     @State private var chromeAccent: KeyboardChromeAccent = AppGroupStore.shared.keyboardChromeAccent
     @State private var aiPreviewBeforeApply: Bool = AppGroupStore.shared.aiPreviewBeforeApply
     @State private var showReportProblem = false
+    @State private var showFullAccessPrompt = false
+    @State private var fullAccessPromptSuppressedThisSession = false
+    @State private var settingsObserver: AppGroupSettingsObserverToken?
     @State private var legalWebURL: URL?
 
     var body: some View {
         NavigationStack {
             Form {
-                Section {
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text(String(localized: "help.keyboard.intro"))
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                        Text(String(localized: "help.keyboard.step1"))
-                        Text(String(localized: "help.keyboard.step2"))
-                        Text(String(localized: "help.keyboard.step3"))
-                        Text(String(localized: "help.keyboard.step4"))
-                    }
-                    .padding(.vertical, 4)
-                } header: {
-                    Text(String(localized: "help.section.keyboard"))
-                }
-
                 Section {
                     Picker(String(localized: "settings.conversation_style"), selection: $style) {
                         ForEach(ConversationStyle.allCases) { s in
@@ -41,9 +32,6 @@ struct ContentView: View {
                         .onChange(of: aiPreviewBeforeApply) { _, new in
                             AppGroupStore.shared.aiPreviewBeforeApply = new
                         }
-                    Text(String(localized: "settings.ai_preview_footer"))
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
                     Picker(String(localized: "appearance.section_title"), selection: $appearance) {
                         ForEach(KeyboardAppearancePreference.allCases) { p in
                             Text(LocalizedStringKey(p.localizationKey)).tag(p)
@@ -62,12 +50,9 @@ struct ContentView: View {
                     }
                 } header: {
                     Text(String(localized: "settings.section.style"))
-                } footer: {
-                    Text(String(localized: "appearance.section_footer"))
                 }
 
                 Section {
-                    Link(String(localized: "settings.open_keyboard_settings"), destination: URL(string: UIApplication.openSettingsURLString)!)
                     Button {
                         showReportProblem = true
                     } label: {
@@ -75,28 +60,61 @@ struct ContentView: View {
                     }
                 }
 
-                Section {
-                    LegalFooterLinks { legalWebURL = $0 }
-                        .listRowInsets(EdgeInsets(top: 20, leading: 16, bottom: 28, trailing: 16))
-                        .listRowBackground(Color.clear)
-                        .listRowSeparator(.hidden)
-                }
+            }
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                LegalFooterLinks { legalWebURL = $0 }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 12)
+                    .padding(.bottom, 8)
+                    .frame(maxWidth: .infinity)
+                    .background(.bar)
             }
             .navigationTitle(Text("app.title", bundle: .main))
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(String(localized: "action.done")) {
+                        closeAppToBackground()
+                    }
+                }
+            }
             .onAppear {
                 AppGroupStore.shared.purgeLegacyKeyboardUIRegionIfPresent()
+                AppGroupStore.shared.syncHostAppLanguageToKeyboard()
                 aiPreviewBeforeApply = AppGroupStore.shared.aiPreviewBeforeApply
                 appearance = AppGroupStore.shared.keyboardAppearancePreference
                 chromeAccent = AppGroupStore.shared.keyboardChromeAccent
+                settingsObserver = AppGroupSettingsNotifier.observe {
+                    refreshFullAccessPrompt()
+                }
+                refreshFullAccessPrompt()
+            }
+            .onChange(of: scenePhase) { _, phase in
+                guard phase == .active else { return }
+                AppGroupStore.shared.syncHostAppLanguageToKeyboard()
+                refreshFullAccessPrompt()
             }
             .task {
                 await bootstrapOnLaunch()
+                refreshFullAccessPrompt()
             }
             .onOpenURL { handleDeepLink($0) }
             .onReceive(NotificationCenter.default.publisher(for: .aiKeyboardOpenURL)) { note in
                 if let url = note.userInfo?["url"] as? URL {
                     handleDeepLink(url)
                 }
+            }
+            .alert(
+                String(localized: "onboarding.full_access.title"),
+                isPresented: $showFullAccessPrompt
+            ) {
+                Button(String(localized: "onboarding.full_access.allow")) {
+                    openSystemSettings()
+                }
+                Button(String(localized: "onboarding.full_access.dont_allow"), role: .cancel) {
+                    suppressFullAccessPromptForSession()
+                }
+            } message: {
+                Text(String(localized: "onboarding.full_access.message"))
             }
             .sheet(isPresented: $showReportProblem) {
                 ReportProblemSheet()
@@ -116,7 +134,10 @@ struct ContentView: View {
         guard url.scheme == "aikeyboard" else { return }
         switch url.host {
         case "refresh", "settings":
-            Task { await bootstrapOnLaunch() }
+            Task {
+                await bootstrapOnLaunch()
+                refreshFullAccessPrompt()
+            }
         default:
             break
         }
@@ -128,6 +149,35 @@ struct ContentView: View {
         try? await SupabaseDeviceAPI.registerIfNeeded()
         await AccountSync.syncAll()
     }
+
+    private func refreshFullAccessPrompt() {
+        if KeyboardStatusService.resolve().fullAccessOn {
+            showFullAccessPrompt = false
+            return
+        }
+        let shouldShow = KeyboardStatusService.shouldPromptForFullAccess()
+        if !shouldShow {
+            showFullAccessPrompt = false
+            return
+        }
+        guard !fullAccessPromptSuppressedThisSession else { return }
+        showFullAccessPrompt = true
+    }
+
+    private func suppressFullAccessPromptForSession() {
+        fullAccessPromptSuppressedThisSession = true
+        showFullAccessPrompt = false
+    }
+
+    private func openSystemSettings() {
+        guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+        UIApplication.shared.open(url)
+    }
+
+    private func closeAppToBackground() {
+        UIApplication.shared.perform(#selector(NSXPCConnection.suspend))
+    }
+
 }
 
 // MARK: - Legal footer & in-app WebView
@@ -212,17 +262,6 @@ private struct ReportProblemSheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                if AppConfig.issueReportBypassDailyLimitForTesting {
-                    Section {
-                        Text(IssueReportL10n.devBypassBanner1)
-                            .font(.footnote.weight(.semibold))
-                        Text(IssueReportL10n.devBypassBanner2)
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                    }
-                    .listRowBackground(Color.orange.opacity(0.2))
-                }
-
                 // `isIssueReportBlockedByLocalDay` ignores plist bypass so devs still see the locked UI when testing bypass off.
                 let calendarBlocked = AppGroupStore.shared.isIssueReportBlockedByLocalDay()
                 let devBypass = AppConfig.issueReportBypassDailyLimitForTesting

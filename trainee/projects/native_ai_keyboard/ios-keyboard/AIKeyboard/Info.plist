@@ -9,7 +9,7 @@
 	<key>AIKeyboardDevSessionBypass</key>
 	<true/>
 	<key>AIKeyboardIssueReportBypassDailyLimit</key>
-	<true/>
+	<false/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
