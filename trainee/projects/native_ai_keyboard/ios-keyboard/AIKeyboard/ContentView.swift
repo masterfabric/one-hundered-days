@@ -1,4 +1,5 @@
 import SwiftUI
+import WebKit
 
 struct ContentView: View {
     @State private var style: ConversationStyle = AppGroupStore.shared.conversationStyle
@@ -6,6 +7,7 @@ struct ContentView: View {
     @State private var chromeAccent: KeyboardChromeAccent = AppGroupStore.shared.keyboardChromeAccent
     @State private var aiPreviewBeforeApply: Bool = AppGroupStore.shared.aiPreviewBeforeApply
     @State private var showReportProblem = false
+    @State private var legalWebURL: URL?
 
     var body: some View {
         NavigationStack {
@@ -72,6 +74,13 @@ struct ContentView: View {
                         Text(IssueReportL10n.openReport)
                     }
                 }
+
+                Section {
+                    LegalFooterLinks { legalWebURL = $0 }
+                        .listRowInsets(EdgeInsets(top: 20, leading: 16, bottom: 28, trailing: 16))
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                }
             }
             .navigationTitle(Text("app.title", bundle: .main))
             .onAppear {
@@ -91,6 +100,14 @@ struct ContentView: View {
             }
             .sheet(isPresented: $showReportProblem) {
                 ReportProblemSheet()
+            }
+            .sheet(isPresented: Binding(
+                get: { legalWebURL != nil },
+                set: { if !$0 { legalWebURL = nil } }
+            )) {
+                if let url = legalWebURL {
+                    LegalDocumentSheet(url: url)
+                }
             }
         }
     }
@@ -113,8 +130,73 @@ struct ContentView: View {
     }
 }
 
+// MARK: - Legal footer & in-app WebView
+// Co-located with ContentView so XcodeGen does not drop separate files from the host target.
+
+private struct LegalFooterLinks: View {
+    let onOpen: (URL) -> Void
+
+    private var links: [(label: String, url: URL)] {
+        [
+            (String(localized: "settings.legal.link.privacy"), AppConstants.legalPrivacyURL),
+            (String(localized: "settings.legal.link.terms"), AppConstants.legalTermsURL),
+            (String(localized: "settings.legal.link.support"), AppConstants.legalSupportURL),
+        ].compactMap { label, url in
+            guard let url else { return nil }
+            return (label, url)
+        }
+    }
+
+    var body: some View {
+        if !links.isEmpty {
+            HStack(spacing: 24) {
+                ForEach(Array(links.enumerated()), id: \.offset) { _, link in
+                    Button {
+                        onOpen(link.url)
+                    } label: {
+                        Text(link.label)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .frame(maxWidth: .infinity)
+        }
+    }
+}
+
+private struct LegalWebView: UIViewRepresentable {
+    let url: URL
+
+    func makeUIView(context: Context) -> WKWebView {
+        let webView = WKWebView(frame: .zero)
+        webView.load(URLRequest(url: url))
+        return webView
+    }
+
+    func updateUIView(_ webView: WKWebView, context: Context) {}
+}
+
+private struct LegalDocumentSheet: View {
+    let url: URL
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            LegalWebView(url: url)
+                .ignoresSafeArea(edges: .bottom)
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button(String(localized: "action.done")) { dismiss() }
+                    }
+                }
+        }
+    }
+}
+
 // MARK: - Report a problem
-// Co-located with ContentView so XcodeGen does not drop a separate file from the host target.
 // Shows a locked card when the local daily cap is hit (avoids a disabled TextField that blocks the keyboard).
 
 private struct ReportProblemSheet: View {

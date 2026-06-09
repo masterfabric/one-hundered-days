@@ -41,6 +41,17 @@ There is no supported way for the *git repo alone* to log into your Apple accoun
 3. Set **`SupabaseProjectURL`** in `AIKeyboard/Info.plist` to your project root (e.g. `https://YOUR_REF.supabase.co`, no `/functions/v1`). Open the host app once so that URL is copied into the **App Group** for the keyboard extension (the `.appex` does not need a duplicate key, but you may add one as a fallback).
 4. Align `AIKeyboardAppRequestSecret` and `AIKeyboardAPIBaseURL` with the server (`APP_REQUEST_SECRET`, deployment URL) if you still use the legacy Node session path.
 
+## App Store legal URLs (Firebase Hosting)
+
+Static pages live in [`../hosting/`](../hosting/README.md). After `firebase deploy --only hosting`, set **`LegalBaseURL`** in `AIKeyboard/Info.plist` to your site root (e.g. `https://<PROJECT_ID>.web.app`). The host app then shows Privacy, Terms, and Support links.
+
+Use these URLs in App Store Connect:
+
+- Privacy Policy → `https://<PROJECT_ID>.web.app/privacy/`
+- Support URL → `https://<PROJECT_ID>.web.app/support/`
+
+Replace `support@masterfabric.com` in the HTML before deploy if needed.
+
 ## Firebase (Crashlytics, Analytics, Firestore)
 
 **TODO (before App Store / production telemetry):** Add **`GoogleService-Info.plist`** as documented in [Setup](#setup) below. Until then, the **Crashlytics post-build script** exits early when that plist is missing (so Xcode builds without `GOOGLE_APP_ID` errors); runtime code already no-ops without the plist.

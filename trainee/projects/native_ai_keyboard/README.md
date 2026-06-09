@@ -11,5 +11,6 @@ This directory holds **app code** and the **Supabase** project (migrations, Edge
 | [`examples/`](./examples/README.md) | Extra templates + `supabase functions serve` hints |
 | [`docs/OPEN_ISSUES.md`](./docs/OPEN_ISSUES.md) | Known open items (e.g. Resend delivery) |
 | [`docs/PR_ISSUE_REPORTS.md`](./docs/PR_ISSUE_REPORTS.md) | PR title + task-style description (copy into GitHub) |
+| [`hosting/`](./hosting/README.md) | Firebase Hosting: Privacy, Terms, Support (App Store URLs) |
 
 Do not commit real API keys or `GoogleService-Info.plist` (see `.gitignore`).

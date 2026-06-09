@@ -11,6 +11,13 @@
 "settings.ai_preview_toggle" = "Öneriyi klavyede önizle";
 "settings.ai_preview_footer" = "Açıkken önce klavyede öneri görünür; Uygula ile mesaja aktarılır. Kapalıyken metin alanı hemen güncellenir.";
 "settings.open_keyboard_settings" = "Klavye ayarlarını aç";
+"settings.legal.section" = "Yasal";
+"settings.legal.privacy" = "Gizlilik Politikası";
+"settings.legal.terms" = "Kullanım Koşulları";
+"settings.legal.support" = "Destek";
+"settings.legal.link.privacy" = "Gizlilik";
+"settings.legal.link.terms" = "Koşullar";
+"settings.legal.link.support" = "Destek";
 "action.done" = "Tamam";
 "action.cancel" = "Vazgeç";
 

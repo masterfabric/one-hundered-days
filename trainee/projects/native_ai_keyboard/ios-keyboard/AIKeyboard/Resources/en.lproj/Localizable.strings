@@ -11,6 +11,13 @@
 "settings.ai_preview_toggle" = "Preview AI result on keyboard";
 "settings.ai_preview_footer" = "When on, the keyboard shows the suggestion first; tap Apply to insert. When off, the field updates immediately.";
 "settings.open_keyboard_settings" = "Open Keyboard settings";
+"settings.legal.section" = "Legal";
+"settings.legal.privacy" = "Privacy Policy";
+"settings.legal.terms" = "Terms of Use";
+"settings.legal.support" = "Support";
+"settings.legal.link.privacy" = "Privacy";
+"settings.legal.link.terms" = "Terms";
+"settings.legal.link.support" = "Support";
 "action.done" = "Done";
 "action.cancel" = "Cancel";
 
