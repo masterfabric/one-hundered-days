@@ -10,6 +10,16 @@ final class AppGroupStore {
         defaults = UserDefaults(suiteName: AppConstants.appGroupId)
     }
 
+    /// True when the App Group container is provisioned for this build (host + keyboard must match entitlements).
+    var isSharedContainerAvailable: Bool {
+        FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: AppConstants.appGroupId) != nil
+    }
+
+    private func publishSettingsChange() {
+        defaults?.synchronize()
+        AppGroupSettingsNotifier.post()
+    }
+
     private enum Keys {
         static let sessionToken = "session_token"
         static let sessionExpires = "session_expires_at"
@@ -32,6 +42,95 @@ final class AppGroupStore {
         static let aiWritingLocale = "ai_writing_locale"
         /// Copied from host `Info.plist` (`SupabaseProjectURL`) so the keyboard `.appex` can call Supabase without its own copy.
         static let supabaseProjectURL = "supabase_project_url"
+        /// Written by the keyboard extension (`hasFullAccess`); read by the host app.
+        static let keyboardHasFullAccess = "keyboard_has_full_access"
+        static let keyboardLastSeenAt = "keyboard_last_seen_at"
+    }
+
+    struct KeyboardAccessReport: Codable {
+        let hasFullAccess: Bool
+        let lastSeenAt: TimeInterval
+    }
+
+    private var accessReportFileURL: URL? {
+        FileManager.default
+            .containerURL(forSecurityApplicationGroupIdentifier: AppConstants.appGroupId)?
+            .appendingPathComponent("keyboard_access_report.json")
+    }
+
+    /// Extension calls this whenever the keyboard is shown.
+    func updateKeyboardAccessReport(hasFullAccess: Bool) {
+        let now = Date().timeIntervalSince1970
+        writeAccessReportFile(hasFullAccess: hasFullAccess, lastSeenAt: now)
+        if let defaults {
+            defaults.set(hasFullAccess, forKey: Keys.keyboardHasFullAccess)
+            defaults.set(now, forKey: Keys.keyboardLastSeenAt)
+            defaults.synchronize()
+        }
+        publishSettingsChange()
+    }
+
+    /// Merges App Group `UserDefaults` and file fallback; prefers the newest `lastSeenAt` (host + extension processes).
+    func resolvedKeyboardAccessReport() -> KeyboardAccessReport? {
+        defaults?.synchronize()
+        let fromFile = readAccessReportFile()
+        let fromDefaults: KeyboardAccessReport? = {
+            guard let defaults, defaults.object(forKey: Keys.keyboardLastSeenAt) != nil else { return nil }
+            let seen = defaults.double(forKey: Keys.keyboardLastSeenAt)
+            guard seen > 0 else { return nil }
+            return KeyboardAccessReport(
+                hasFullAccess: defaults.bool(forKey: Keys.keyboardHasFullAccess),
+                lastSeenAt: seen
+            )
+        }()
+        switch (fromFile, fromDefaults) {
+        case let (file?, defaults?) where file.lastSeenAt >= defaults.lastSeenAt:
+            return file
+        case let (file?, defaults?) where defaults.lastSeenAt > file.lastSeenAt:
+            return defaults
+        case let (file?, nil):
+            return file
+        case let (nil, defaults?):
+            return defaults
+        default:
+            return nil
+        }
+    }
+
+    var keyboardReportsFullAccess: Bool {
+        resolvedKeyboardAccessReport()?.hasFullAccess ?? false
+    }
+
+    /// Epoch seconds when the keyboard extension last appeared (written with access report).
+    var keyboardLastSeenAt: TimeInterval {
+        resolvedKeyboardAccessReport()?.lastSeenAt ?? 0
+    }
+
+    private func writeAccessReportFile(hasFullAccess: Bool, lastSeenAt: TimeInterval) {
+        guard let url = accessReportFileURL else { return }
+        let report = KeyboardAccessReport(hasFullAccess: hasFullAccess, lastSeenAt: lastSeenAt)
+        guard let data = try? JSONEncoder().encode(report) else { return }
+        try? data.write(to: url, options: .atomic)
+    }
+
+    private func readAccessReportFile() -> KeyboardAccessReport? {
+        guard let url = accessReportFileURL,
+              let data = try? Data(contentsOf: url),
+              let report = try? JSONDecoder().decode(KeyboardAccessReport.self, from: data)
+        else { return nil }
+        return report
+    }
+
+    var keyboardHasBeenUsed: Bool {
+        keyboardLastSeenAt > 0
+    }
+
+    /// Host app shows a one-tap Settings prompt while Full Access is off.
+    /// iOS does not expose Settings state to the host — we only know after the keyboard extension runs and reports `hasFullAccess`.
+    var shouldPromptForFullAccessInHostApp: Bool {
+        guard isSharedContainerAvailable else { return false }
+        guard keyboardHasBeenUsed else { return false }
+        return !keyboardReportsFullAccess
     }
 
     /// When set, `AppConfig.apiBaseURL` prefers this over Info.plist (shared with keyboard extension).
@@ -65,7 +164,10 @@ final class AppGroupStore {
             let raw = defaults?.string(forKey: Keys.conversationStyle) ?? ConversationStyle.formal.rawValue
             return ConversationStyle(rawValue: raw) ?? .formal
         }
-        set { defaults?.set(newValue.rawValue, forKey: Keys.conversationStyle) }
+        set {
+            defaults?.set(newValue.rawValue, forKey: Keys.conversationStyle)
+            publishSettingsChange()
+        }
     }
 
     var entitlementActive: Bool {
@@ -88,7 +190,7 @@ final class AppGroupStore {
         }
         set {
             defaults?.set(newValue, forKey: Keys.aiPreviewBeforeApply)
-            defaults?.synchronize()
+            publishSettingsChange()
         }
     }
 
@@ -100,7 +202,7 @@ final class AppGroupStore {
         }
         set {
             defaults?.set(newValue.rawValue, forKey: Keys.keyboardChromeAccent)
-            defaults?.synchronize()
+            publishSettingsChange()
         }
     }
 
@@ -112,7 +214,7 @@ final class AppGroupStore {
         }
         set {
             defaults?.set(newValue.rawValue, forKey: Keys.keyboardAppearance)
-            defaults?.synchronize()
+            publishSettingsChange()
         }
     }
 

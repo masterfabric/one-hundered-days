@@ -12,7 +12,7 @@ import UIKit
 enum FirebaseDeviceRegistry {
     /// Call once at launch. No-op if `GoogleService-Info.plist` is missing (local dev without Firebase).
     static func configureAtLaunch() {
-        guard Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist") != nil else { return }
+        guard FirebaseBootstrap.hasGoogleServicePlist else { return }
         if FirebaseApp.app() != nil { return }
         FirebaseApp.configure()
         Analytics.setAnalyticsCollectionEnabled(true)

@@ -44,6 +44,9 @@ targets:
           DEBUG_INFORMATION_FORMAT: dwarf-with-dsym
     entitlements:
       path: AIKeyboard/AIKeyboard.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.nativeaikeyboard.shared
     dependencies:
       - target: AIKeyboardKeyboard
       - package: Firebase
@@ -99,6 +102,9 @@ targets:
           DEBUG_INFORMATION_FORMAT: dwarf-with-dsym
     entitlements:
       path: KeyboardExtension/KeyboardExtension.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.nativeaikeyboard.shared
     dependencies:
       - package: Firebase
         product: FirebaseCore

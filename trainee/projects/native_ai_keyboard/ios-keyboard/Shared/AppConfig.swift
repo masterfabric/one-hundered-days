@@ -32,6 +32,15 @@ enum AppConfig {
         (Bundle.main.object(forInfoDictionaryKey: key) as? String)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
     }
 
+    /// DEBUG smoke UI: toolbar + space only — proves extension loads without full keyplane init.
+    static var minimalKeyboard: Bool {
+        #if DEBUG
+        if let b = Bundle.main.object(forInfoDictionaryKey: "AIKeyboardMinimalKeyboard") as? Bool { return b }
+        if let n = Bundle.main.object(forInfoDictionaryKey: "AIKeyboardMinimalKeyboard") as? NSNumber { return n.boolValue }
+        #endif
+        return false
+    }
+
     /// Local testing: treat session as valid and call API with `X-Device-Id` only (server needs DEV_REWRITE_WITHOUT_JWT + ENTITLEMENT_BYPASS). Turn off for App Store builds.
     static var devSessionBypass: Bool {
         if let b = Bundle.main.object(forInfoDictionaryKey: "AIKeyboardDevSessionBypass") as? Bool { return b }

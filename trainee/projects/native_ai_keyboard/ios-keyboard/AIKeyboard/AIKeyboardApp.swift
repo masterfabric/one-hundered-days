@@ -6,7 +6,9 @@ struct AIKeyboardApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            KeyboardHostEnvironment {
+                ContentView()
+            }
         }
     }
 }

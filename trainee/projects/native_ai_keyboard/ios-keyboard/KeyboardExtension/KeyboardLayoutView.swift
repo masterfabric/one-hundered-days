@@ -2,27 +2,46 @@ import CoreGraphics
 import CoreText
 import UIKit
 
-/// AI actions + optional result preview + QWERTY + bottom strip.
+/// KeyboardKit-style zones: **toolbar** (AI + chrome) → **keyboard body** (keys only).
+/// No extra row below the space/return line — that gap was exposing UIInputView backdrop.
 final class KeyboardLayoutView: UIView {
     private weak var controller: KeyboardViewController?
 
     /// Floats above the main stack so iOS does not clip the preview (keyboard height is fixed).
-    private let previewOverlay = UIView()
-    private let resultTitleLabel = UILabel()
-    private let resultTextView = UITextView()
-    private let resultButtonRow = UIStackView()
-    private let resultDiscardButton = UIButton(type: .system)
-    private let resultApplyButton = UIButton(type: .system)
+    private let previewZone = KeyboardPreviewOverlayView()
+    private var previewOverlay: UIView { previewZone }
+    private var resultTitleLabel: UILabel { previewZone.titleLabel }
+    private var resultTextView: UITextView { previewZone.textView }
+    private var resultButtonRow: UIStackView { previewZone.buttonRow }
+    private var resultDiscardButton: UIButton { previewZone.discardButton }
+    private var resultApplyButton: UIButton { previewZone.applyButton }
     private var previewOverlayHeightConstraint: NSLayoutConstraint?
+    private var statusRowHeightConstraint: NSLayoutConstraint?
+    private var toolbarHeightConstraint: NSLayoutConstraint?
+    private var keyplaneMinHeightConstraint: NSLayoutConstraint?
+    private var lastFittedBounds: CGSize = .zero
+    private var didFinishDeferredBuild = false
+    private var isDeferredKeyplaneBuilding = false
+    private var keyplanePlaceholderRows: [UIView] = []
 
-    private let actionsRow = UIStackView()
-    private let keyContainer = UIStackView()
-    private let bottomBar = UIStackView()
-    private let statusRow = UIStackView()
-    private let statusLabel = UILabel()
-    private let openAppButton = UIButton(type: .system)
+    /// Opaque layer — paints over any UIInputView backdrop that peeks through.
+    private let surfaceCover = UIView()
+
+    /// Top slot — mirrors KeyboardKit `toolbar:` (AI actions + trailing chrome controls).
+    private let toolbarZone = KeyboardToolbarView()
+    var chromeToolbarAnchor: UIView { toolbarZone }
+    private var toolbarRow: UIStackView { toolbarZone }
+    private var actionsRow: UIStackView { toolbarZone.actionsRow }
+    private var plusButtonHost: UIStackView { toolbarZone.plusButtonHost }
+    /// Fills remaining height — mirrors KeyboardKit `KeyboardView` body.
+    private let keyContainer = KeyboardKeyplaneView()
+    private let statusZone = KeyboardStatusRowView()
+    private var statusRow: UIStackView { statusZone }
+    private var statusLabel: UILabel { statusZone.statusLabel }
+    private var openAppButton: UIButton { statusZone.openAppButton }
 
     private var sessionPollTimer: Timer?
+    private var settingsObserver: AppGroupSettingsObserverToken?
     private var deleteRepeatTimer: Timer?
     private var deleteRepeatStartWork: DispatchWorkItem?
 
@@ -30,11 +49,12 @@ final class KeyboardLayoutView: UIView {
     private var pendingRewriteFromTouchDown: (text: String, snapshot: RewriteSnapshot)?
 
     private weak var shiftKeyButton: UIButton?
-    private weak var aiPrimaryButton: UIButton?
     private var alternatesHost: UIView?
     private var alternatesOptions: [String] = []
     /// One view per alternate “mini key” (hit-testing uses these frames).
     private var alternatesCells: [UIView] = []
+    /// Swallows the trailing `touchUpInside` after an alternate was picked from the long-press tray.
+    private var suppressNextLetterKeyTap = false
 
     private enum ShiftPhase {
         case off
@@ -56,16 +76,91 @@ final class KeyboardLayoutView: UIView {
 
     /// Emoji grid relies on color font rendering in the extension; set `true` again when glyphs draw reliably.
     private static let emojiKeyplaneEnabled = false
-    private weak var themeCycleButton: UIButton?
+
+    private enum KeyMetrics {
+        static let horizontalSpacing: CGFloat = 6
+        static let rowSpacing: CGFloat = 10
+        static let keyHeight: CGFloat = 52
+        static let keyTopInset: CGFloat = 4
+        static let keyBottomInset: CGFloat = 6
+        static let keyHorizontalInset: CGFloat = 3
+        static let keyCornerRadius: CGFloat = 5
+        static let shiftDeleteWidth: CGFloat = 42
+        static let bottomSideKeyWidth: CGFloat = 85
+        static let staggeredRowIdentifier = "kb_row_staggered"
+    }
+
+    /// Target chrome + key block height at full size (toolbar 48 + 4 rows + gaps + insets).
+    private enum LayoutFit {
+        static let topCornerRadius: CGFloat = 24
+        static let designHeight: CGFloat = 304
+        static let designWidth: CGFloat = 390
+        static let toolbarDesign: CGFloat = 48
+        static let toolbarMin: CGFloat = 34
+        static let rowSpacingMin: CGFloat = 3
+        static let keyInsetMin: CGFloat = 4
+        static let minReliableKeyboardHeight: CGFloat = designHeight * 0.72
+        static let keyplaneMinHeight: CGFloat = KeyMetrics.keyHeight * 4
+    }
+
+    private enum KeyCapKind {
+        case letter
+        case functional
+        case returnKey
+    }
 
     private var kb: Bundle { .keyboardBundle }
 
-    private static let keyGrayLight = UIColor(red: 0.82, green: 0.84, blue: 0.86, alpha: 1.0)
-    private static let keyGrayDark = UIColor(white: 0.11, alpha: 1)
+    static func surfaceColor(isDark: Bool) -> UIColor {
+        KeyboardNativePalette.surfaceColor(isDark: isDark)
+    }
+
+    static func applyTopOvalMask(to view: UIView) {
+        view.layer.cornerRadius = LayoutFit.topCornerRadius
+        view.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+        if #available(iOS 13.0, *) {
+            view.layer.cornerCurve = .continuous
+        }
+        view.clipsToBounds = true
+    }
+
+    private func nativePalette(isDark: Bool? = nil) -> KeyboardNativePalette.Colors {
+        let dark = isDark ?? (traitCollection.userInterfaceStyle == .dark)
+        return KeyboardNativePalette.colors(isDark: dark)
+    }
+
+    private func attachNativeKeyPressFeedback(to button: UIButton, kind: KeyCapKind) {
+        button.configurationUpdateHandler = { [weak self] btn in
+            guard let self, var cfg = btn.configuration else { return }
+            let palette = self.nativePalette()
+            let pressed = btn.isHighlighted || btn.isSelected
+            let (base, pressedColor): (UIColor, UIColor) = switch kind {
+            case .letter:
+                (palette.letterKey, palette.letterKeyPressed)
+            case .functional:
+                (palette.functionalKey, palette.functionalKeyPressed)
+            case .returnKey:
+                (self.chromeAccentColor(), self.chromeAccentPressedColor())
+            }
+            let bg = pressed ? pressedColor : base
+            cfg.baseBackgroundColor = bg
+            cfg.background.backgroundColor = bg
+            btn.configuration = cfg
+        }
+    }
 
     /// Toolbar / AI tint from App Group (host app picker). SF Symbols + system font only — no third-party icon fonts.
     private func chromeAccentColor() -> UIColor {
         AppGroupStore.shared.keyboardChromeAccent.uiColor
+    }
+
+    private func chromeAccentPressedColor() -> UIColor {
+        let base = chromeAccentColor()
+        var h: CGFloat = 0, s: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        if base.getHue(&h, saturation: &s, brightness: &b, alpha: &a) {
+            return UIColor(hue: h, saturation: s, brightness: max(0, b * 0.82), alpha: a)
+        }
+        return base.withAlphaComponent(0.85)
     }
 
     /// SF Symbol with a small system-font fallback bitmap if a name is missing (avoids “?” placeholders in extensions).
@@ -89,13 +184,12 @@ final class KeyboardLayoutView: UIView {
     private func actionRowSymbolImage(systemName: String) -> UIImage {
         let fallback: String
         switch systemName {
-        case "arrow.triangle.2.circlepath": fallback = "R"
         case "arrow.up.circle": fallback = "I"
         case "arrow.down.right.and.arrow.up.left": fallback = "S"
         case "arrow.up.left.and.arrow.down.right": fallback = "X"
         default: fallback = "•"
         }
-        return symbolImage(systemName: systemName, pointSize: 15, weight: .semibold, fallbackLetter: fallback)
+        return symbolImage(systemName: systemName, pointSize: 13, weight: .semibold, fallbackLetter: fallback)
     }
 
     private func refreshChromeAccents() {
@@ -110,40 +204,126 @@ final class KeyboardLayoutView: UIView {
             resultApplyButton.configuration = ac
         }
 
-        for case let b as UIButton in actionsRow.arrangedSubviews {
-            guard var cfg = b.configuration else { continue }
+        let buttons = actionsRow.arrangedSubviews.compactMap { $0 as? UIButton }
+        for button in buttons {
+            guard var cfg = button.configuration else { continue }
             cfg.baseForegroundColor = accent
-            b.configuration = cfg
+            button.configuration = cfg
+        }
+
+        if let traits = controller?.traitCollection {
+            applyKeyCapsAppearance(isDark: traits.userInterfaceStyle == .dark)
         }
     }
 
-    private func refreshThemeCycleChrome() {
-        guard let b = themeCycleButton else { return }
-        let (name, letter): (String, String)
-        switch AppGroupStore.shared.keyboardAppearancePreference {
-        case .system: (name, letter) = ("circle.lefthalf.filled", "◐")
-        case .light: (name, letter) = ("sun.max.fill", "L")
-        case .dark: (name, letter) = ("moon.fill", "D")
+    override var intrinsicContentSize: CGSize {
+        CGSize(width: UIView.noIntrinsicMetric, height: UIView.noIntrinsicMetric)
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        surfaceCover.frame = bounds
+        Self.applyTopOvalMask(to: self)
+        Self.applyTopOvalMask(to: surfaceCover)
+        guard !isDeferredKeyplaneBuilding else { return }
+        fitLayoutToAvailableBounds()
+    }
+
+    /// Apply fit once after deferred keyplane build when bounds are stable.
+    func applyStableLayoutFit() {
+        isDeferredKeyplaneBuilding = false
+        lastFittedBounds = .zero
+        fitLayoutToAvailableBounds(force: true)
+    }
+
+    /// Shrink toolbar + key gaps/insets when iOS allocates a shorter keyboard slot (landscape / small devices).
+    private func fitLayoutToAvailableBounds(force: Bool = false) {
+        if isDeferredKeyplaneBuilding {
+            KeyboardExtensionDiagnostics.log("fitLayout skipped=deferred")
+            return
         }
-        let img = symbolImage(systemName: name, pointSize: 17, weight: .medium, fallbackLetter: letter)
-        b.setImage(img, for: .normal)
-        b.setTitle(nil, for: .normal)
-        b.tintColor = .label
+        let size = bounds.size
+        guard size.width > 1, size.height > 1 else { return }
+        guard size.height >= LayoutFit.minReliableKeyboardHeight else {
+            KeyboardExtensionDiagnostics.log(
+                String(format: "fitLayout skipped=transient size=%.0fx%.0f", size.width, size.height)
+            )
+            return
+        }
+        if !force,
+           abs(size.width - lastFittedBounds.width) < 0.5,
+           abs(size.height - lastFittedBounds.height) < 0.5
+        {
+            return
+        }
+        lastFittedBounds = size
+
+        let heightScale = min(1, size.height / LayoutFit.designHeight)
+        let widthScale = min(1, size.width / LayoutFit.designWidth)
+        let scale = min(heightScale, widthScale)
+
+        let toolbarH = max(LayoutFit.toolbarMin, LayoutFit.toolbarDesign * scale)
+        toolbarHeightConstraint?.constant = toolbarH
+
+        let rowSpacing = max(LayoutFit.rowSpacingMin, KeyMetrics.rowSpacing * scale)
+        keyContainer.spacing = rowSpacing
+
+        let topInset = max(LayoutFit.keyInsetMin, KeyMetrics.keyTopInset * scale)
+        let bottomInset = max(LayoutFit.keyInsetMin, KeyMetrics.keyBottomInset * scale)
+        keyContainer.layoutMargins = UIEdgeInsets(
+            top: topInset,
+            left: KeyMetrics.keyHorizontalInset,
+            bottom: bottomInset,
+            right: KeyMetrics.keyHorizontalInset
+        )
+        applyStaggeredRowInsets(width: size.width)
+        KeyboardExtensionDiagnostics.logSync(
+            String(format: "fitLayout size=%.0fx%.0f scale=%.2f toolbar=%.0f applied", size.width, size.height, scale, toolbarH)
+        )
     }
 
     init(controller: KeyboardViewController) {
+        KeyboardExtensionDiagnostics.logSync("KeyboardLayoutView phase1 begin")
         self.controller = controller
         super.init(frame: .zero)
+        clipsToBounds = false
+        isOpaque = true
+        KeyboardExtensionDiagnostics.logSync("build step: resultPanel")
         buildResultPanel()
+        KeyboardExtensionDiagnostics.logSync("build step: actionsRow")
         buildActionsRow()
-        rebuildKeyContainer()
-        buildBottomBar()
+        KeyboardExtensionDiagnostics.logSync("build step: toolbarChrome")
+        buildToolbarChrome()
+        KeyboardExtensionDiagnostics.logSync("build step: statusRow")
         buildStatusRow()
+        KeyboardExtensionDiagnostics.logSync("build step: layoutRoot")
         layoutRoot()
+        KeyboardExtensionDiagnostics.logSync("build step: appearance")
         applyAppearance(traits: controller.traitCollection)
-        refreshOpenAppButtonVisibility()
         setResultPanelVisible(false, animated: false)
-        syncRegionChrome()
+        KeyboardExtensionDiagnostics.logSync("KeyboardLayoutView phase1 done")
+    }
+
+    /// Phase 2: heavy keyplane + chrome overlay — deferred until after first appear frame.
+    /// Letter rows are built across run-loop turns to avoid extension watchdog kills.
+    func finishDeferredBuildIfNeeded(completion: (() -> Void)? = nil) {
+        guard !didFinishDeferredBuild else {
+            completion?()
+            return
+        }
+        didFinishDeferredBuild = true
+        isDeferredKeyplaneBuilding = true
+        KeyboardExtensionDiagnostics.logSync("build step: deferred start")
+        removeKeyplanePlaceholderRows()
+        resetKeyContainerLayout()
+        if keyplane == .letters {
+            continueIncrementalLetterBuild(step: 0, completion: completion)
+        } else {
+            rebuildKeyContainerContent()
+            applyKeyContainerFinishStyling()
+            wireKeyInteractionExtras()
+            finishDeferredBuildTail(completion: completion)
+        }
     }
 
     @available(*, unavailable)
@@ -161,43 +341,65 @@ final class KeyboardLayoutView: UIView {
         super.didMoveToWindow()
         sessionPollTimer?.invalidate()
         sessionPollTimer = nil
+        settingsObserver = nil
         if window != nil {
+            settingsObserver = AppGroupSettingsNotifier.observe { [weak self] in
+                self?.syncSettingsFromAppGroup()
+            }
             let t = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
                 self?.refreshOpenAppButtonVisibility()
             }
             RunLoop.main.add(t, forMode: .common)
             sessionPollTimer = t
             refreshOpenAppButtonVisibility()
+            syncSettingsFromAppGroup()
         }
     }
 
-    /// Call when iOS preferred languages may have changed (e.g. after visiting Settings) so toolbar strings refresh.
-    func refreshChromeStringsFromAppGroup() {
+    /// Refresh toolbar strings + host-app settings (preview toggle, accent, etc.).
+    func syncSettingsFromAppGroup() {
         syncRegionChrome()
+        if !AppGroupStore.shared.aiPreviewBeforeApply {
+            hideResultPanel()
+        }
+        refreshOpenAppButtonVisibility()
+        refreshChromeAccents()
+        controller?.chromeOptionsPresenter?.rebuildIfVisible()
+    }
+
+    func refreshChromeStringsFromAppGroup() {
+        syncSettingsFromAppGroup()
     }
 
     func applyAppearance(traits: UITraitCollection) {
         let isDark = traits.userInterfaceStyle == .dark
-        backgroundColor = isDark ? Self.keyGrayDark : Self.keyGrayLight
+        let surface = Self.surfaceColor(isDark: isDark)
+        isOpaque = true
+        backgroundColor = surface
+        surfaceCover.backgroundColor = surface
+        Self.applyTopOvalMask(to: self)
+        Self.applyTopOvalMask(to: surfaceCover)
+        controller?.syncKeyboardSurface()
         statusLabel.textColor = isDark ? .lightGray : .darkGray
+        keyContainer.backgroundColor = surface
         applyKeyCapsAppearance(isDark: isDark)
-        applyAIPrimaryAppearance(isDark: isDark)
         applyResultPanelAppearance(isDark: isDark)
+        toolbarZone.applyDividerAppearance(isDark: isDark)
+        controller?.chromeOptionsPresenter?.applyAppearance()
         refreshShiftAppearance()
-        refreshThemeCycleChrome()
         refreshChromeAccents()
     }
 
     private func applyResultPanelAppearance(isDark: Bool) {
-        previewOverlay.backgroundColor = isDark ? UIColor(white: 0.18, alpha: 1) : .white
-        resultTitleLabel.textColor = isDark ? .white : .label
-        resultTextView.backgroundColor = isDark ? UIColor(white: 0.14, alpha: 1) : UIColor(white: 0.96, alpha: 1)
-        resultTextView.textColor = isDark ? .white : .label
+        let palette = nativePalette(isDark: isDark)
+        previewOverlay.backgroundColor = palette.previewPanel
+        resultTitleLabel.textColor = palette.primaryText
+        resultTextView.backgroundColor = palette.previewField
+        resultTextView.textColor = palette.primaryText
     }
 
     private func applyKeyCapsAppearance(isDark: Bool) {
-        let keyBG = isDark ? UIColor(white: 0.28, alpha: 1) : UIColor(white: 1.0, alpha: 1.0)
-        let fg = isDark ? UIColor.white : UIColor.black
+        let palette = nativePalette(isDark: isDark)
         func visit(_ view: UIView) {
             if let s = view as? UIStackView {
                 s.arrangedSubviews.forEach { visit($0) }
@@ -208,27 +410,47 @@ final class KeyboardLayoutView: UIView {
                 return
             }
             if let ek = view as? EmojiDrawKeyControl {
-                ek.backgroundColor = keyBG
+                ek.backgroundColor = palette.letterKey
                 ek.setNeedsDisplay()
                 return
             }
+            if let letter = view as? LetterKeyControl {
+                letter.applyColors(
+                    normal: palette.letterKey,
+                    pressed: palette.letterKeyPressed,
+                    text: palette.primaryText
+                )
+                return
+            }
             guard let b = view as? UIButton, var cfg = b.configuration else { return }
-            cfg.baseBackgroundColor = keyBG
-            cfg.baseForegroundColor = fg
-            cfg.background.backgroundColor = keyBG
+            let isReturn = b.accessibilityIdentifier == "kb_return"
+            let kind: KeyCapKind
+            if isReturn {
+                kind = .returnKey
+            } else if isFunctionalKeyButton(b) {
+                kind = .functional
+            } else {
+                kind = .letter
+            }
+            let bg: UIColor = switch kind {
+            case .letter: palette.letterKey
+            case .functional: palette.functionalKey
+            case .returnKey: chromeAccentColor()
+            }
+            let foreground = isReturn ? palette.returnText : palette.primaryText
+            cfg.baseBackgroundColor = bg
+            cfg.baseForegroundColor = foreground
+            cfg.background.backgroundColor = bg
             b.configuration = cfg
+            b.layer.shadowOpacity = palette.keyShadowOpacity
+            b.setNeedsUpdateConfiguration()
         }
         keyContainer.arrangedSubviews.forEach { visit($0) }
     }
 
-    private func applyAIPrimaryAppearance(isDark: Bool) {
-        guard let b = aiPrimaryButton else { return }
-        let keyBG = isDark ? UIColor(white: 0.28, alpha: 1) : UIColor(white: 1.0, alpha: 1.0)
-        let symbolTint = isDark ? UIColor.white : chromeAccentColor()
-        b.backgroundColor = keyBG
-        b.tintColor = symbolTint
-        b.layer.borderWidth = isDark ? 0 : 1
-        b.layer.borderColor = isDark ? nil : UIColor(white: 0.78, alpha: 1).cgColor
+    private func isFunctionalKeyButton(_ button: UIButton) -> Bool {
+        guard let id = button.accessibilityIdentifier else { return false }
+        return ["kb_shift", "kb_delete", "kb_123", "kb_ABC", "kb_return", "kb_sym_page"].contains(id)
     }
 
     // MARK: - Strings (Language & Region + typing locale: non-English preferred before English in the merged list)
@@ -268,14 +490,11 @@ final class KeyboardLayoutView: UIView {
         var applyCfg = resultApplyButton.configuration
         applyCfg?.title = kbString("keyboard.apply_result")
         resultApplyButton.configuration = applyCfg
-        aiPrimaryButton?.accessibilityLabel = kbString("keyboard.ai_button_accessibility")
-        refreshThemeCycleChrome()
         refreshChromeAccents()
     }
 
     private func refreshActionRowTitles() {
         let items: [(String, String)] = [
-            ("arrow.triangle.2.circlepath", "keyboard.action_rewrite"),
             ("arrow.up.circle", "keyboard.action_improve"),
             ("arrow.down.right.and.arrow.up.left", "keyboard.action_shorten"),
             ("arrow.up.left.and.arrow.down.right", "keyboard.action_expand"),
@@ -302,41 +521,50 @@ final class KeyboardLayoutView: UIView {
     }
 
     private func layoutRoot() {
-        let root = UIStackView()
-        root.axis = .vertical
-        root.spacing = 8
-        root.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(root)
+        let constraints = KeyboardRootViewLayout.install(
+            on: self,
+            surfaceCover: surfaceCover,
+            toolbarRow: toolbarZone,
+            statusRow: statusZone,
+            keyContainer: keyContainer,
+            previewOverlay: previewZone,
+            toolbarDesignHeight: LayoutFit.toolbarDesign
+        )
+        toolbarHeightConstraint = constraints.toolbarHeight
+        statusRowHeightConstraint = constraints.statusHeight
+        previewOverlayHeightConstraint = constraints.previewHeight
+        keyplaneMinHeightConstraint = constraints.keyplaneMinHeight
+        installKeyplanePlaceholderRows()
+        updateStatusRowVisibility()
+    }
 
-        NSLayoutConstraint.activate([
-            root.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
-            root.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
-            root.topAnchor.constraint(equalTo: topAnchor, constant: 6),
-            root.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -6),
-        ])
+    private func installKeyplanePlaceholderRows() {
+        removeKeyplanePlaceholderRows()
+        keyplanePlaceholderRows = (0 ..< 4).map { _ in
+            let row = UIView()
+            row.isUserInteractionEnabled = false
+            row.backgroundColor = .clear
+            row.setContentHuggingPriority(.defaultHigh, for: .vertical)
+            row.setContentCompressionResistancePriority(.defaultHigh, for: .vertical)
+            let height = row.heightAnchor.constraint(equalToConstant: KeyMetrics.keyHeight)
+            height.priority = .defaultHigh
+            height.isActive = true
+            keyContainer.addArrangedSubview(row)
+            return row
+        }
+    }
 
-        root.addArrangedSubview(actionsRow)
-        root.addArrangedSubview(statusRow)
-        root.addArrangedSubview(keyContainer)
-        root.addArrangedSubview(bottomBar)
+    private func removeKeyplanePlaceholderRows() {
+        keyplanePlaceholderRows.forEach {
+            keyContainer.removeArrangedSubview($0)
+            $0.removeFromSuperview()
+        }
+        keyplanePlaceholderRows = []
+    }
 
-        bottomBar.heightAnchor.constraint(equalToConstant: 38).isActive = true
-
-        previewOverlay.translatesAutoresizingMaskIntoConstraints = false
-        previewOverlay.isUserInteractionEnabled = true
-        previewOverlay.layer.cornerRadius = 22
-        previewOverlay.clipsToBounds = true
-        insertSubview(previewOverlay, aboveSubview: root)
-        let oh = previewOverlay.heightAnchor.constraint(equalToConstant: 0)
-        oh.priority = .required
-        oh.isActive = true
-        previewOverlayHeightConstraint = oh
-        NSLayoutConstraint.activate([
-            previewOverlay.topAnchor.constraint(equalTo: topAnchor, constant: 6),
-            previewOverlay.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
-            previewOverlay.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
-            oh,
-        ])
+    func toggleChromeOptionsPanel() {
+        hideAlternatesBar()
+        controller?.toggleChromeOptionsPanel()
     }
 
     private func buildResultPanel() {
@@ -411,6 +639,7 @@ final class KeyboardLayoutView: UIView {
     }
 
     private func showResultPanel(with text: String) {
+        guard AppGroupStore.shared.aiPreviewBeforeApply else { return }
         resultTextView.text = text
         setResultPanelVisible(true, animated: true)
         bringSubviewToFront(previewOverlay)
@@ -428,15 +657,10 @@ final class KeyboardLayoutView: UIView {
         controller.applyPreviewResult(text)
         resultTextView.text = ""
         setResultPanelVisible(false, animated: true)
-        statusLabel.text = kbString("keyboard.done")
+        statusLabel.text = ""
     }
 
     private func buildStatusRow() {
-        statusRow.axis = .horizontal
-        statusRow.spacing = 8
-        statusRow.alignment = .center
-        statusRow.distribution = .fill
-
         statusLabel.font = .preferredFont(forTextStyle: .caption2)
         statusLabel.textAlignment = .left
         statusLabel.numberOfLines = 2
@@ -453,9 +677,6 @@ final class KeyboardLayoutView: UIView {
         }, for: .touchUpInside)
         openAppButton.setContentHuggingPriority(.required, for: .horizontal)
         openAppButton.setContentCompressionResistancePriority(.required, for: .horizontal)
-
-        statusRow.addArrangedSubview(statusLabel)
-        statusRow.addArrangedSubview(openAppButton)
     }
 
     private func refreshOpenAppButtonVisibility() {
@@ -465,16 +686,18 @@ final class KeyboardLayoutView: UIView {
         ocfg?.title = kbString("keyboard.tap_open_app")
         ocfg?.baseForegroundColor = chromeAccentColor()
         openAppButton.configuration = ocfg
+        updateStatusRowVisibility()
+    }
+
+    private func updateStatusRowVisibility() {
+        let hasStatusText = !(statusLabel.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        let show = hasStatusText || !openAppButton.isHidden
+        statusRow.isHidden = !show
+        statusRowHeightConstraint?.constant = show ? 22 : 0
     }
 
     private func buildActionsRow() {
-        actionsRow.axis = .horizontal
-        actionsRow.spacing = 4
-        actionsRow.distribution = .fillEqually
-        actionsRow.alignment = .fill
-
         let items: [(String, String, RewriteMode)] = [
-            ("arrow.triangle.2.circlepath", "keyboard.action_rewrite", .rewrite),
             ("arrow.up.circle", "keyboard.action_improve", .proofread),
             ("arrow.down.right.and.arrow.up.left", "keyboard.action_shorten", .shorten),
             ("arrow.up.left.and.arrow.down.right", "keyboard.action_expand", .expand),
@@ -491,18 +714,19 @@ final class KeyboardLayoutView: UIView {
         cfg.image = actionRowSymbolImage(systemName: symbolName)
         cfg.title = kbString(titleKey)
         cfg.imagePlacement = .top
-        cfg.imagePadding = 4
+        cfg.imagePadding = 2
         cfg.baseForegroundColor = chromeAccentColor()
         cfg.titleLineBreakMode = .byTruncatingTail
         cfg.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
             var o = incoming
-            o.font = .systemFont(ofSize: 11, weight: .semibold)
+            o.font = .systemFont(ofSize: 9, weight: .semibold)
             return o
         }
         let b = UIButton(configuration: cfg)
-        b.layer.cornerRadius = 10
-        b.clipsToBounds = true
+        b.clipsToBounds = false
         b.backgroundColor = UIColor.clear
+        b.setContentCompressionResistancePriority(.required, for: .vertical)
+        b.setContentHuggingPriority(.defaultHigh, for: .vertical)
         b.addTarget(self, action: #selector(rewriteTouchDown), for: .touchDown)
         b.addTarget(self, action: #selector(rewriteTouchCancel), for: [.touchUpOutside, .touchCancel])
         return b
@@ -510,13 +734,23 @@ final class KeyboardLayoutView: UIView {
 
     // MARK: - Keyplanes (letters / numbers / emoji)
 
-    private func rebuildKeyContainer() {
+    private func resetKeyContainerLayout() {
         keyContainer.arrangedSubviews.forEach { $0.removeFromSuperview() }
         shiftKeyButton = nil
         keyContainer.axis = .vertical
-        keyContainer.spacing = 6
-        keyContainer.distribution = .fill
+        keyContainer.spacing = KeyMetrics.rowSpacing
+        keyContainer.distribution = .fillEqually
+        keyContainer.alignment = .fill
+        keyContainer.layoutMargins = UIEdgeInsets(
+            top: KeyMetrics.keyTopInset,
+            left: KeyMetrics.keyHorizontalInset,
+            bottom: KeyMetrics.keyBottomInset,
+            right: KeyMetrics.keyHorizontalInset
+        )
+        keyContainer.isLayoutMarginsRelativeArrangement = true
+    }
 
+    private func rebuildKeyContainerContent() {
         switch keyplane {
         case .letters:
             rebuildLetterKeyboardContent()
@@ -530,7 +764,9 @@ final class KeyboardLayoutView: UIView {
                 rebuildLetterKeyboardContent()
             }
         }
+    }
 
+    private func applyKeyContainerFinishStyling() {
         refreshShiftAppearance()
         refreshLetterKeyCaps()
         refreshReturnKeyTitle()
@@ -539,57 +775,207 @@ final class KeyboardLayoutView: UIView {
         }
     }
 
-    private func rebuildLetterKeyboardContent() {
-        addLetterRow(["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"])
-        addLetterRow(["a", "s", "d", "f", "g", "h", "j", "k", "l"])
-
-        let row3 = UIStackView()
-        row3.axis = .horizontal
-        row3.spacing = 5
-        row3.alignment = .fill
-        row3.distribution = .fill
-
-        let shiftBtn = keyCapsButton(title: "shift", isLetter: false)
-        shiftBtn.widthAnchor.constraint(equalToConstant: 48).isActive = true
-        shiftKeyButton = shiftBtn
-        wireShiftGestures(shiftBtn)
-
-        let middle = UIStackView()
-        middle.axis = .horizontal
-        middle.spacing = 5
-        middle.distribution = .fillEqually
-        for k in ["z", "x", "c", "v", "b", "n", "m"] {
-            middle.addArrangedSubview(keyCapsButton(title: k, isLetter: true))
+    private func continueIncrementalLetterBuild(step: Int, completion: (() -> Void)?) {
+        guard step == 0 else { return }
+        KeyboardExtensionDiagnostics.logSync("layoutEngine spec=lettersQwerty sync")
+        keyContainer.alpha = 0
+        UIView.performWithoutAnimation {
+            KeyboardLayoutEngine.buildSynchronously(
+                spec: KeyboardLayoutSpec.lettersQwerty,
+                context: makeLayoutBuildContext(),
+                onRowInstalled: { [weak self] row in
+                    self?.keyContainer.addArrangedSubview(row)
+                }
+            )
         }
-        middle.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        applyKeyContainerFinishStyling()
+        wireKeyInteractionExtras()
+        keyContainer.alpha = 1
+        finishDeferredBuildTail(completion: completion)
+    }
 
-        let delBtn = keyCapsButton(title: "⌫", isLetter: false)
-        delBtn.widthAnchor.constraint(equalToConstant: 48).isActive = true
+    private func row2HorizontalInset(for width: CGFloat) -> CGFloat {
+        let w = width > 1 ? width : LayoutFit.designWidth
+        return max(4, w * 0.05)
+    }
 
-        row3.addArrangedSubview(shiftBtn)
-        row3.addArrangedSubview(middle)
-        row3.addArrangedSubview(delBtn)
-        keyContainer.addArrangedSubview(row3)
+    private func applyStaggeredRowInsets(width: CGFloat) {
+        let inset = row2HorizontalInset(for: width)
+        for row in keyContainer.arrangedSubviews {
+            guard let stack = row as? UIStackView,
+                  stack.accessibilityIdentifier == KeyMetrics.staggeredRowIdentifier
+            else { continue }
+            stack.layoutMargins = UIEdgeInsets(top: 0, left: inset, bottom: 0, right: inset)
+        }
+    }
 
+    private func makeLayoutBuildContext() -> KeyboardLayoutEngine.Context {
+        KeyboardLayoutEngine.Context(
+            metrics: .init(
+                horizontalSpacing: KeyMetrics.horizontalSpacing,
+                row2HorizontalInset: row2HorizontalInset(for: bounds.width),
+                shiftDeleteWidth: KeyMetrics.shiftDeleteWidth,
+                bottomSideKeyWidth: KeyMetrics.bottomSideKeyWidth
+            ),
+            makeLetterKey: { [weak self] letter in
+                guard let self else { return UIView() }
+                return self.letterKeyControl(letter: letter, lightweight: true)
+            },
+            makeFunctionalKey: { [weak self] title, width in
+                guard let self else { return UIView() }
+                let button = self.keyCapsButton(title: title, isLetter: false, lightweight: true)
+                if let width {
+                    button.widthAnchor.constraint(equalToConstant: width).isActive = true
+                }
+                return button
+            },
+            configureExpandableRow: { [weak self] row in
+                self?.configureExpandableKeyRow(row)
+            },
+            configureUniformLetterKey: { [weak self] key in
+                self?.configureUniformLetterKey(key)
+            },
+            appendKey: { [weak self] key, row in
+                self?.appendDeferredKey(key, to: row)
+            },
+            onShiftKeyResolved: { [weak self] button in
+                self?.shiftKeyButton = button
+            },
+            log: { message in
+                KeyboardExtensionDiagnostics.logSync(message)
+            }
+        )
+    }
+
+    private func letterKeyControl(letter: Character, lightweight: Bool = true) -> LetterKeyControl {
+        let control = LetterKeyControl(letter: letter, lightweight: lightweight)
+        let palette = nativePalette()
+        control.applyCaps(uppercase: shiftPhase != .off)
+        control.applyColors(
+            normal: palette.letterKey,
+            pressed: palette.letterKeyPressed,
+            text: palette.primaryText
+        )
+        if lightweight {
+            control.addTarget(self, action: #selector(letterKeyTapped(_:)), for: .touchUpInside)
+        }
+        return control
+    }
+
+    private func appendDeferredKey(_ key: UIView, to row: UIStackView) {
+        UIView.performWithoutAnimation {
+            row.addArrangedSubview(key)
+        }
+    }
+
+    private func collectKeyInteractionTargets(in view: UIView) -> [UIView] {
+        if let stack = view as? UIStackView {
+            return stack.arrangedSubviews.flatMap { collectKeyInteractionTargets(in: $0) }
+        }
+        if let scroll = view as? UIScrollView {
+            return scroll.subviews.flatMap { collectKeyInteractionTargets(in: $0) }
+        }
+        if let letter = view as? LetterKeyControl {
+            return [letter]
+        }
+        if let button = view as? UIButton, button.configuration != nil {
+            return [button]
+        }
+        return []
+    }
+
+    private func wireKeyInteractionExtras() {
+        let targets = keyContainer.arrangedSubviews.flatMap { collectKeyInteractionTargets(in: $0) }
+        for target in targets {
+            attachInteractionExtras(to: target)
+        }
+        if let shiftBtn = shiftKeyButton {
+            wireShiftGestures(shiftBtn)
+        }
+        KeyboardExtensionDiagnostics.logSync("keyplane interactions wired")
+    }
+
+    private func attachInteractionExtras(to target: UIView) {
+        if let letter = target as? LetterKeyControl {
+            attachLetterAlternatesLongPress(to: letter, baseLetter: letter.baseLetter)
+            return
+        }
+        guard let button = target as? UIButton else { return }
+        guard let id = button.accessibilityIdentifier else { return }
+        let isReturn = id == "kb_return"
+        let kind: KeyCapKind
+        if isReturn {
+            kind = .returnKey
+        } else if isFunctionalKeyButton(button) {
+            kind = .functional
+        } else {
+            kind = .letter
+        }
+        attachNativeKeyPressFeedback(to: button, kind: kind)
+
+        if id == "kb_shift" || id == "kb_delete" { return }
+        guard id.hasPrefix("kb_") else { return }
+        let suffix = String(id.dropFirst(3))
+        guard suffix.count == 1, let ch = suffix.lowercased().first else { return }
+        attachLetterAlternatesLongPress(to: button, baseLetter: ch)
+    }
+
+    private func attachLetterAlternatesLongPress(to view: UIView, baseLetter: Character) {
+        let hasLongPress = view.gestureRecognizers?.contains(where: { $0 is UILongPressGestureRecognizer }) ?? false
+        guard !hasLongPress else { return }
+        let lp = UILongPressGestureRecognizer(target: self, action: #selector(letterLongPress(_:)))
+        lp.minimumPressDuration = 0.38
+        lp.cancelsTouchesInView = false
+        view.addGestureRecognizer(lp)
+        let region = KeyboardUIRegion.inferredFromPreferredLanguages()
+        view.accessibilityHint = region.alternates(forBaseLetter: baseLetter).isEmpty
+            ? nil
+            : kbString("keyboard.accessibility_alternates_hint")
+    }
+
+    private func finishDeferredBuildTail(completion: (() -> Void)?) {
+        refreshOpenAppButtonVisibility()
+        syncRegionChrome()
+        if let traits = controller?.traitCollection {
+            applyKeyCapsAppearance(isDark: traits.userInterfaceStyle == .dark)
+        }
+        KeyboardExtensionDiagnostics.logSync("build step: deferred done")
+        completion?()
+    }
+
+    private func rebuildKeyContainer() {
+        resetKeyContainerLayout()
+        rebuildKeyContainerContent()
+        applyKeyContainerFinishStyling()
+    }
+
+    private func rebuildLetterKeyboardContent() {
+        let topRow = makeUniformLetterKeyRow(["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"])
+        keyContainer.addArrangedSubview(topRow.stack)
+        keyContainer.addArrangedSubview(
+            makeStaggeredLetterKeyRow(["a", "s", "d", "f", "g", "h", "j", "k", "l"])
+        )
+        keyContainer.addArrangedSubview(makeShiftLetterKeyRow())
         addLettersModeBottomRow()
     }
 
-    private func addLettersModeBottomRow() {
+    private func addLettersModeBottomRow(lightweight: Bool = false) {
         let row4 = UIStackView()
         row4.axis = .horizontal
-        row4.spacing = 5
+        row4.spacing = KeyMetrics.horizontalSpacing
         row4.alignment = .fill
         row4.distribution = .fill
+        configureExpandableKeyRow(row4)
 
-        let numBtn = keyCapsButton(title: "123", isLetter: false)
-        numBtn.widthAnchor.constraint(equalToConstant: 56).isActive = true
+        let numBtn = keyCapsButton(title: "123", isLetter: false, lightweight: lightweight)
+        numBtn.widthAnchor.constraint(equalToConstant: KeyMetrics.bottomSideKeyWidth).isActive = true
 
-        let spaceBtn = keyCapsButton(title: "space", isLetter: false)
+        let spaceBtn = keyCapsButton(title: "space", isLetter: false, lightweight: lightweight)
         spaceBtn.setContentHuggingPriority(UILayoutPriority(1), for: .horizontal)
         spaceBtn.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
 
-        let retBtn = keyCapsButton(title: "return", isLetter: false)
-        retBtn.widthAnchor.constraint(equalToConstant: 92).isActive = true
+        let retBtn = keyCapsButton(title: "return", isLetter: false, lightweight: lightweight)
+        retBtn.widthAnchor.constraint(equalToConstant: KeyMetrics.bottomSideKeyWidth).isActive = true
 
         row4.addArrangedSubview(numBtn)
         row4.addArrangedSubview(spaceBtn)
@@ -600,12 +986,13 @@ final class KeyboardLayoutView: UIView {
     private func addNumbersOrEmojiBottomRow() {
         let row4 = UIStackView()
         row4.axis = .horizontal
-        row4.spacing = 5
+        row4.spacing = KeyMetrics.horizontalSpacing
         row4.alignment = .fill
         row4.distribution = .fill
+        configureExpandableKeyRow(row4)
 
         let abc = keyCapsButton(title: "ABC", isLetter: false)
-        abc.widthAnchor.constraint(equalToConstant: 56).isActive = true
+        abc.widthAnchor.constraint(equalToConstant: KeyMetrics.bottomSideKeyWidth).isActive = true
         abc.accessibilityIdentifier = "kb_ABC"
 
         let spaceBtn = keyCapsButton(title: "space", isLetter: false)
@@ -613,7 +1000,7 @@ final class KeyboardLayoutView: UIView {
         spaceBtn.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
 
         let retBtn = keyCapsButton(title: "return", isLetter: false)
-        retBtn.widthAnchor.constraint(equalToConstant: 92).isActive = true
+        retBtn.widthAnchor.constraint(equalToConstant: KeyMetrics.bottomSideKeyWidth).isActive = true
 
         row4.addArrangedSubview(abc)
         row4.addArrangedSubview(spaceBtn)
@@ -632,9 +1019,10 @@ final class KeyboardLayoutView: UIView {
 
         let row3 = UIStackView()
         row3.axis = .horizontal
-        row3.spacing = 5
+        row3.spacing = KeyMetrics.horizontalSpacing
         row3.alignment = .fill
         row3.distribution = .fill
+        configureExpandableKeyRow(row3)
 
         let toggleLabel = numbersSymbolsPage == 0 ? "#+=" : "123"
         let toggle = keyCapsButton(title: toggleLabel, isLetter: false)
@@ -643,7 +1031,7 @@ final class KeyboardLayoutView: UIView {
 
         let mid = UIStackView()
         mid.axis = .horizontal
-        mid.spacing = 5
+        mid.spacing = KeyMetrics.horizontalSpacing
         mid.distribution = .fillEqually
         for sym in [",", ".", "?", "!", "'"] {
             mid.addArrangedSubview(makeOutputKeyButton(output: sym))
@@ -664,9 +1052,10 @@ final class KeyboardLayoutView: UIView {
     private func addNumberOutputRow(_ keys: [String]) {
         let h = UIStackView()
         h.axis = .horizontal
-        h.spacing = 5
+        h.spacing = KeyMetrics.horizontalSpacing
         h.distribution = .fillEqually
         h.alignment = .fill
+        configureExpandableKeyRow(h)
         for k in keys {
             h.addArrangedSubview(makeOutputKeyButton(output: k))
         }
@@ -715,9 +1104,9 @@ final class KeyboardLayoutView: UIView {
                 }
                 ek.layer.cornerRadius = 5
                 ek.layer.shadowColor = UIColor.black.cgColor
-                ek.layer.shadowOpacity = 0.12
+                ek.layer.shadowOpacity = nativePalette().keyShadowOpacity
                 ek.layer.shadowOffset = CGSize(width: 0, height: 1)
-                ek.layer.shadowRadius = 0.5
+                ek.layer.shadowRadius = 0
                 row.addArrangedSubview(ek)
             }
             inner.addArrangedSubview(row)
@@ -741,31 +1130,36 @@ final class KeyboardLayoutView: UIView {
         let b = KeyboardOutputButton(type: .custom)
         b.output = output
 
+        let palette = nativePalette()
+
         var cfg = UIButton.Configuration.filled()
         cfg.cornerStyle = .fixed
-        cfg.background.cornerRadius = 5
-        cfg.baseForegroundColor = .label
-        cfg.baseBackgroundColor = .white
-        cfg.background.backgroundColor = .white
+        cfg.background.cornerRadius = KeyMetrics.keyCornerRadius
+        cfg.baseForegroundColor = palette.primaryText
+        cfg.baseBackgroundColor = palette.letterKey
+        cfg.background.backgroundColor = palette.letterKey
         cfg.title = output
         cfg.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
             var o = incoming
             let isDigit = output.count == 1 && output.first.map { $0.isNumber } == true
-            o.font = .systemFont(ofSize: isDigit ? 22 : 18, weight: .regular)
+            o.font = .systemFont(ofSize: isDigit ? 22 : 18, weight: .light)
             return o
         }
-        cfg.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 1, bottom: 0, trailing: 1)
+        cfg.contentInsets = NSDirectionalEdgeInsets(top: 2, leading: 1, bottom: 4, trailing: 1)
         b.configuration = cfg
 
-        b.heightAnchor.constraint(equalToConstant: 44).isActive = true
+        b.contentVerticalAlignment = .fill
+        b.setContentHuggingPriority(.defaultLow, for: .vertical)
+        b.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
         if #available(iOS 13.0, *) {
             b.layer.cornerCurve = .continuous
         }
-        b.layer.cornerRadius = 5
+        b.layer.cornerRadius = KeyMetrics.keyCornerRadius
         b.layer.shadowColor = UIColor.black.cgColor
-        b.layer.shadowOpacity = 0.12
+        b.layer.shadowOpacity = palette.keyShadowOpacity
         b.layer.shadowOffset = CGSize(width: 0, height: 1)
-        b.layer.shadowRadius = 0.5
+        b.layer.shadowRadius = 0
+        attachNativeKeyPressFeedback(to: b, kind: .letter)
         b.addTarget(self, action: #selector(outputKeyTap(_:)), for: .touchUpInside)
         return b
     }
@@ -789,62 +1183,178 @@ final class KeyboardLayoutView: UIView {
         }
     }
 
-    private func addLetterRow(_ letters: [String]) {
-        let h = UIStackView()
-        h.axis = .horizontal
-        h.spacing = 5
-        h.distribution = .fillEqually
-        h.alignment = .fill
-        for k in letters {
-            h.addArrangedSubview(keyCapsButton(title: k, isLetter: true))
-        }
-        keyContainer.addArrangedSubview(h)
+    private struct LetterKeyRow {
+        let stack: UIStackView
     }
 
-    private func keyCapsButton(title: String, isLetter: Bool) -> UIButton {
+    private func makeUniformLetterKeyRow(_ letters: [String], lightweight: Bool = false) -> LetterKeyRow {
+        let row = UIStackView()
+        row.axis = .horizontal
+        row.spacing = KeyMetrics.horizontalSpacing
+        row.distribution = .fillEqually
+        row.alignment = .fill
+        configureExpandableKeyRow(row)
+
+        for letter in letters {
+            guard let ch = letter.lowercased().first else { continue }
+            let key = letterKeyControl(letter: ch, lightweight: lightweight)
+            configureUniformLetterKey(key)
+            row.addArrangedSubview(key)
+        }
+        return LetterKeyRow(stack: row)
+    }
+
+    /// ASDF row: HTML `.row-2 { margin: 5% }` — inset applied from available width.
+    private func makeStaggeredLetterKeyRow(_ letters: [String], lightweight: Bool = false) -> UIStackView {
+        let row = UIStackView()
+        row.axis = .horizontal
+        row.spacing = KeyMetrics.horizontalSpacing
+        row.distribution = .fillEqually
+        row.alignment = .fill
+        row.isLayoutMarginsRelativeArrangement = true
+        row.accessibilityIdentifier = KeyMetrics.staggeredRowIdentifier
+        let inset = row2HorizontalInset(for: bounds.width)
+        row.layoutMargins = UIEdgeInsets(top: 0, left: inset, bottom: 0, right: inset)
+        configureExpandableKeyRow(row)
+
+        for letter in letters {
+            guard let ch = letter.lowercased().first else { continue }
+            let key = letterKeyControl(letter: ch, lightweight: lightweight)
+            configureUniformLetterKey(key)
+            row.addArrangedSubview(key)
+        }
+        return row
+    }
+
+    private func makeShiftLetterKeyRow(lightweight: Bool = false) -> UIStackView {
+        let row = UIStackView()
+        row.axis = .horizontal
+        row.spacing = KeyMetrics.horizontalSpacing
+        row.distribution = .fill
+        row.alignment = .fill
+        configureExpandableKeyRow(row)
+
+        let shiftBtn = keyCapsButton(title: "shift", isLetter: false, lightweight: lightweight)
+        shiftBtn.widthAnchor.constraint(equalToConstant: KeyMetrics.shiftDeleteWidth).isActive = true
+        shiftKeyButton = shiftBtn
+        if !lightweight {
+            wireShiftGestures(shiftBtn)
+        }
+        row.addArrangedSubview(shiftBtn)
+
+        let middle = UIStackView()
+        middle.axis = .horizontal
+        middle.spacing = KeyMetrics.horizontalSpacing
+        middle.distribution = .fillEqually
+        middle.alignment = .fill
+        for letter in ["z", "x", "c", "v", "b", "n", "m"] {
+            guard let ch = letter.lowercased().first else { continue }
+            let key = letterKeyControl(letter: ch, lightweight: lightweight)
+            configureUniformLetterKey(key)
+            middle.addArrangedSubview(key)
+        }
+        middle.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        middle.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        row.addArrangedSubview(middle)
+
+        let delBtn = keyCapsButton(title: "⌫", isLetter: false, lightweight: lightweight)
+        delBtn.widthAnchor.constraint(equalToConstant: KeyMetrics.shiftDeleteWidth).isActive = true
+        row.addArrangedSubview(delBtn)
+        return row
+    }
+
+    private func configureUniformLetterKey(_ key: UIView) {
+        key.setContentHuggingPriority(.defaultLow, for: .vertical)
+        key.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
+        key.setContentHuggingPriority(.required, for: .horizontal)
+        key.setContentCompressionResistancePriority(.required, for: .horizontal)
+    }
+
+    private func configureExpandableKeyRow(_ row: UIStackView) {
+        row.setContentHuggingPriority(.defaultLow, for: .vertical)
+        row.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
+    }
+
+    private func keyCapsButton(title: String, isLetter: Bool, lightweight: Bool = false) -> UIButton {
+        let palette = nativePalette()
+        let isFunctional = ["shift", "⌫", "123", "ABC", "return", "#+="].contains(title)
+        let isReturn = title == "return"
+        let isSpace = title == "space"
+
+        let kind: KeyCapKind
+        if isReturn {
+            kind = .returnKey
+        } else if isFunctional {
+            kind = .functional
+        } else {
+            kind = .letter
+        }
+
+        let bg: UIColor = switch kind {
+        case .letter: palette.letterKey
+        case .functional: palette.functionalKey
+        case .returnKey: chromeAccentColor()
+        }
+
+        let fg: UIColor = isReturn ? palette.returnText : palette.primaryText
+
         var cfg = UIButton.Configuration.filled()
         cfg.cornerStyle = .fixed
-        cfg.background.cornerRadius = 5
-        cfg.baseForegroundColor = .label
-        cfg.baseBackgroundColor = .white
-        cfg.background.backgroundColor = .white
-        if title == "space" {
+        cfg.background.cornerRadius = KeyMetrics.keyCornerRadius
+        cfg.baseForegroundColor = fg
+        cfg.baseBackgroundColor = bg
+        cfg.background.backgroundColor = bg
+        if isSpace {
             cfg.title = nil
-        } else if title == "return" {
+        } else if isReturn {
             cfg.title = kbString("keyboard.key_return")
         } else if title == "ABC" {
             cfg.title = kbString("keyboard.key_abc")
         } else {
             cfg.title = title
         }
-        cfg.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
-            var o = incoming
-            o.font = .systemFont(ofSize: title == "return" ? 14 : 17, weight: .regular)
-            return o
+        if !lightweight {
+            let letterFontSize: CGFloat = 22
+            let specialFontSize: CGFloat = 16
+            let titleFontSize: CGFloat = isLetter ? letterFontSize : specialFontSize
+            let titleFontWeight: UIFont.Weight = isReturn ? .medium : .regular
+            cfg.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
+                var o = incoming
+                o.font = .systemFont(ofSize: titleFontSize, weight: titleFontWeight)
+                return o
+            }
         }
         cfg.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 2, bottom: 0, trailing: 2)
         if title == "shift" {
             cfg.image = UIImage(systemName: "shift")
             cfg.title = nil
-            cfg.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 16, weight: .medium)
+            cfg.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 14, weight: .regular)
         }
         if title == "⌫" {
             cfg.image = UIImage(systemName: "delete.left")
             cfg.title = nil
-            cfg.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 18, weight: .medium)
+            cfg.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 14, weight: .regular)
         }
         let b = UIButton(configuration: cfg)
-        b.heightAnchor.constraint(equalToConstant: 44).isActive = true
+        b.contentVerticalAlignment = .fill
+        b.setContentHuggingPriority(.defaultLow, for: .vertical)
+        b.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
         if #available(iOS 13.0, *) {
             b.layer.cornerCurve = .continuous
         }
-        b.layer.cornerRadius = 5
-        b.clipsToBounds = false
-        b.layer.shadowColor = UIColor.black.cgColor
-        b.layer.shadowOpacity = 0.12
-        b.layer.shadowOffset = CGSize(width: 0, height: 1)
-        b.layer.shadowRadius = 0.5
-        b.layer.masksToBounds = false
+        b.layer.cornerRadius = KeyMetrics.keyCornerRadius
+        if lightweight {
+            b.clipsToBounds = true
+            b.layer.masksToBounds = true
+        } else {
+            b.clipsToBounds = false
+            b.layer.shadowColor = UIColor.black.cgColor
+            b.layer.shadowOpacity = palette.keyShadowOpacity
+            b.layer.shadowOffset = CGSize(width: 0, height: 1)
+            b.layer.shadowRadius = 0
+            b.layer.masksToBounds = false
+            attachNativeKeyPressFeedback(to: b, kind: kind)
+        }
 
         switch title {
         case "space":
@@ -869,10 +1379,10 @@ final class KeyboardLayoutView: UIView {
             b.addTarget(self, action: #selector(keyTap(_:)), for: .touchUpInside)
         }
 
-        if isLetter, title.count == 1, let ch = title.lowercased().first {
+        if !lightweight, isLetter, title.count == 1, let ch = title.lowercased().first {
             let lp = UILongPressGestureRecognizer(target: self, action: #selector(letterLongPress(_:)))
             lp.minimumPressDuration = 0.38
-            lp.cancelsTouchesInView = true
+            lp.cancelsTouchesInView = false
             b.addGestureRecognizer(lp)
             let region = KeyboardUIRegion.inferredFromPreferredLanguages()
             b.accessibilityHint = region.alternates(forBaseLetter: ch).isEmpty
@@ -943,13 +1453,13 @@ final class KeyboardLayoutView: UIView {
         switch shiftPhase {
         case .off:
             cfg.image = UIImage(systemName: "shift")
-            cfg.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 16, weight: .medium)
+            cfg.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 13, weight: .medium)
         case .oneShot:
             cfg.image = UIImage(systemName: "shift.fill")
-            cfg.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 16, weight: .semibold)
+            cfg.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 13, weight: .semibold)
         case .locked:
             cfg.image = UIImage(systemName: "capslock.fill") ?? UIImage(systemName: "shift.fill")
-            cfg.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 16, weight: .semibold)
+            cfg.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 13, weight: .semibold)
         }
         b.configuration = cfg
         let isDark = traitCollection.userInterfaceStyle == .dark
@@ -964,6 +1474,10 @@ final class KeyboardLayoutView: UIView {
                 s.arrangedSubviews.forEach { visit($0) }
                 return
             }
+            if let letter = view as? LetterKeyControl {
+                letter.applyCaps(uppercase: upper)
+                return
+            }
             guard let b = view as? UIButton, let id = b.accessibilityIdentifier, id.hasPrefix("kb_") else { return }
             let suf = String(id.dropFirst(3))
             guard suf.count == 1, suf != " ", suf.rangeOfCharacter(from: CharacterSet.letters) != nil else { return }
@@ -975,28 +1489,64 @@ final class KeyboardLayoutView: UIView {
         keyContainer.arrangedSubviews.forEach { visit($0) }
     }
 
+    @objc private func letterKeyTapped(_ sender: LetterKeyControl) {
+        if suppressNextLetterKeyTap {
+            suppressNextLetterKeyTap = false
+            return
+        }
+        guard keyplane == .letters else { return }
+        let out: String
+        switch shiftPhase {
+        case .locked, .oneShot:
+            out = String(sender.baseLetter).uppercased()
+        case .off:
+            out = String(sender.baseLetter)
+        }
+        controller?.insertString(out)
+        if shiftPhase == .oneShot {
+            shiftPhase = .off
+            refreshShiftAppearance()
+            refreshLetterKeyCaps()
+        }
+    }
+
     @objc private func letterLongPress(_ g: UILongPressGestureRecognizer) {
-        guard keyplane == .letters,
-              let btn = g.view as? UIButton, let id = btn.accessibilityIdentifier, id.hasPrefix("kb_") else { return }
-        let suf = String(id.dropFirst(3))
-        guard suf.count == 1, let ch = suf.lowercased().first else { return }
+        guard keyplane == .letters else { return }
+        let ch: Character?
+        if let letter = g.view as? LetterKeyControl {
+            ch = letter.baseLetter
+        } else if let btn = g.view as? UIButton,
+                  let id = btn.accessibilityIdentifier,
+                  id.hasPrefix("kb_")
+        {
+            let suf = String(id.dropFirst(3))
+            ch = suf.count == 1 ? suf.lowercased().first : nil
+        } else {
+            return
+        }
+        guard let ch else { return }
         let region = KeyboardUIRegion.inferredFromPreferredLanguages()
         let alts = region.alternates(forBaseLetter: ch)
         guard !alts.isEmpty else { return }
 
+        guard let sourceView = g.view else { return }
         switch g.state {
         case .began:
             hideAlternatesBar()
-            showAlternatesBar(options: alts, source: btn)
+            showAlternatesBar(options: alts, source: sourceView)
         case .changed:
             if let h = alternatesHost {
                 updateAlternatesSelection(for: g.location(in: h))
             }
         case .ended:
+            var pickedAlternate = false
             if let h = alternatesHost {
-                pickAlternateIfNeeded(touch: g.location(in: h))
+                pickedAlternate = pickAlternateIfNeeded(touch: g.location(in: h))
             }
             hideAlternatesBar()
+            if pickedAlternate {
+                suppressNextLetterKeyTap = true
+            }
         case .cancelled, .failed:
             hideAlternatesBar()
         default:
@@ -1004,25 +1554,13 @@ final class KeyboardLayoutView: UIView {
         }
     }
 
-    /// Colors for the long-press tray + mini keys (close to system keyboard).
+    /// Colors for the long-press tray + mini keys (native keyboard popup).
     private func alternatePopupPalette() -> (tray: UIColor, key: UIColor, keyHighlighted: UIColor, text: UIColor) {
-        if traitCollection.userInterfaceStyle == .dark {
-            return (
-                UIColor(white: 0.2, alpha: 1),
-                UIColor(white: 0.3, alpha: 1),
-                UIColor(white: 0.42, alpha: 1),
-                .white
-            )
-        }
-        return (
-            UIColor(white: 0.82, alpha: 1),
-            .white,
-            UIColor(white: 0.93, alpha: 1),
-            .label
-        )
+        let palette = nativePalette()
+        return (palette.alternateTray, palette.alternateKey, palette.alternateKeyHighlighted, palette.alternateText)
     }
 
-    private func showAlternatesBar(options: [String], source: UIButton) {
+    private func showAlternatesBar(options: [String], source: UIView) {
         alternatesOptions = options
         alternatesCells.removeAll()
 
@@ -1132,8 +1670,9 @@ final class KeyboardLayoutView: UIView {
         }
     }
 
-    private func pickAlternateIfNeeded(touch: CGPoint) {
-        guard let host = alternatesHost else { return }
+    @discardableResult
+    private func pickAlternateIfNeeded(touch: CGPoint) -> Bool {
+        guard let host = alternatesHost else { return false }
         let p = convert(touch, from: host)
         let palette = alternatePopupPalette()
         for (i, cell) in alternatesCells.enumerated() {
@@ -1146,9 +1685,10 @@ final class KeyboardLayoutView: UIView {
                     refreshShiftAppearance()
                     refreshLetterKeyCaps()
                 }
-                break
+                return true
             }
         }
+        return false
     }
 
     private func hideAlternatesBar() {
@@ -1158,61 +1698,29 @@ final class KeyboardLayoutView: UIView {
         alternatesCells = []
     }
 
-    private func buildBottomBar() {
-        bottomBar.axis = .horizontal
-        bottomBar.spacing = 8
-        bottomBar.alignment = .center
-        bottomBar.distribution = .fill
+    /// Trailing settings chrome control (HTML: spacer + gear on the right).
+    private func buildToolbarChrome() {
+        if Self.emojiKeyplaneEnabled {
+            let emojiBtn = makeToolbarIconActionButton(
+                systemName: "face.smiling",
+                pointSize: 20,
+                accessibilityKey: "keyboard.emoji_keyboard_accessibility"
+            )
+            emojiBtn.isExclusiveTouch = true
+            emojiBtn.addAction(UIAction { [weak self] _ in self?.switchToEmojiKeyplane() }, for: .touchUpInside)
+            plusButtonHost.addArrangedSubview(emojiBtn)
+        }
 
-        let primary = UIButton(type: .system)
-        primary.translatesAutoresizingMaskIntoConstraints = false
-        primary.accessibilityIdentifier = "kb_ai_primary"
-        primary.layer.cornerRadius = 8
-        primary.accessibilityLabel = kbString("keyboard.ai_button_accessibility")
-        let chromeIcon: CGFloat = 17
-        primary.setImage(symbolImage(systemName: "sparkles", pointSize: 19, weight: .medium, fallbackLetter: "*"), for: .normal)
-        aiPrimaryButton = primary
-        primary.addTarget(self, action: #selector(rewriteTouchDown), for: .touchDown)
-        primary.addTarget(self, action: #selector(rewriteTouchCancel), for: [.touchUpOutside, .touchCancel])
-        primary.addAction(UIAction { [weak self] _ in self?.runTransform(mode: .rewrite) }, for: .touchUpInside)
-        NSLayoutConstraint.activate([
-            primary.widthAnchor.constraint(equalToConstant: 36),
-            primary.heightAnchor.constraint(equalToConstant: 36),
-        ])
-
-        let themeBtn = UIButton(type: .system)
-        themeBtn.setContentHuggingPriority(.required, for: .horizontal)
-        themeCycleButton = themeBtn
-        refreshThemeCycleChrome()
-        themeBtn.addAction(UIAction { [weak self] _ in self?.cycleKeyboardTheme() }, for: .touchUpInside)
-
-        let accentBtn = bottomChromeSymbolButton(systemName: "paintpalette", pointSize: chromeIcon, accessibilityKey: "keyboard.accent_cycle_accessibility")
-        accentBtn.addAction(UIAction { [weak self] _ in self?.cycleChromeAccent() }, for: .touchUpInside)
-
-        let downBtn = bottomChromeSymbolButton(systemName: "chevron.compact.down", pointSize: chromeIcon, accessibilityKey: "keyboard.dismiss_keyboard_accessibility")
-        downBtn.addAction(UIAction { [weak self] _ in self?.dismissChromeKeyboard() }, for: .touchUpInside)
-
-        let spacer = UIView()
-        spacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
-        spacer.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
-
-        let rightSubs: [UIView] = {
-            if Self.emojiKeyplaneEnabled {
-                let emojiBtn = bottomChromeSymbolButton(systemName: "face.smiling", pointSize: chromeIcon, accessibilityKey: "keyboard.emoji_keyboard_accessibility")
-                emojiBtn.addAction(UIAction { [weak self] _ in self?.switchToEmojiKeyplane() }, for: .touchUpInside)
-                return [themeBtn, accentBtn, emojiBtn, downBtn]
-            }
-            return [themeBtn, accentBtn, downBtn]
-        }()
-
-        let rightCluster = UIStackView(arrangedSubviews: rightSubs)
-        rightCluster.axis = .horizontal
-        rightCluster.spacing = 8
-        rightCluster.alignment = .center
-
-        bottomBar.addArrangedSubview(primary)
-        bottomBar.addArrangedSubview(spacer)
-        bottomBar.addArrangedSubview(rightCluster)
+        let settingsBtn = makeToolbarIconActionButton(
+            systemName: "gearshape",
+            pointSize: 17,
+            accessibilityKey: "keyboard.chrome_more_accessibility"
+        )
+        settingsBtn.isExclusiveTouch = true
+        settingsBtn.addAction(UIAction { [weak self] _ in
+            self?.toggleChromeOptionsPanel()
+        }, for: .touchUpInside)
+        plusButtonHost.addArrangedSubview(settingsBtn)
     }
 
     @objc private func keyTap(_ sender: UIButton) {
@@ -1246,6 +1754,10 @@ final class KeyboardLayoutView: UIView {
             numbersSymbolsPage = numbersSymbolsPage == 0 ? 1 : 0
             rebuildKeyContainer()
         default:
+            if suppressNextLetterKeyTap {
+                suppressNextLetterKeyTap = false
+                return
+            }
             guard keyplane == .letters else { return }
             if id.hasPrefix("kb_") {
                 let suf = String(id.dropFirst(3))
@@ -1267,41 +1779,32 @@ final class KeyboardLayoutView: UIView {
         }
     }
 
-    private func bottomChromeSymbolButton(systemName: String, pointSize: CGFloat, accessibilityKey: String) -> UIButton {
+    private func makeToolbarIconActionButton(
+        systemName: String,
+        pointSize: CGFloat,
+        accessibilityKey: String
+    ) -> UIButton {
         let b = UIButton(type: .system)
         let letter = String(systemName.prefix(1).uppercased())
-        b.setImage(symbolImage(systemName: systemName, pointSize: pointSize, weight: .medium, fallbackLetter: letter), for: .normal)
-        b.setContentHuggingPriority(.required, for: .horizontal)
+        b.setImage(
+            symbolImage(systemName: systemName, pointSize: pointSize, weight: .medium, fallbackLetter: letter),
+            for: .normal
+        )
         b.tintColor = .label
         b.accessibilityLabel = kbString(accessibilityKey)
+        b.contentVerticalAlignment = .center
+        b.contentHorizontalAlignment = .center
+        b.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        b.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        b.setContentHuggingPriority(.defaultLow, for: .vertical)
+        b.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
         return b
-    }
-
-    private func cycleKeyboardTheme() {
-        let next = AppGroupStore.shared.keyboardAppearancePreference.cycled()
-        AppGroupStore.shared.keyboardAppearancePreference = next
-        controller?.applyKeyboardAppearancePreference()
-        refreshThemeCycleChrome()
-    }
-
-    private func cycleChromeAccent() {
-        let all = KeyboardChromeAccent.allCases
-        let current = AppGroupStore.shared.keyboardChromeAccent
-        let idx = (all.firstIndex(of: current) ?? 0) + 1
-        AppGroupStore.shared.keyboardChromeAccent = all[idx % all.count]
-        let isDark = traitCollection.userInterfaceStyle == .dark
-        refreshChromeAccents()
-        applyAIPrimaryAppearance(isDark: isDark)
     }
 
     private func switchToEmojiKeyplane() {
         guard Self.emojiKeyplaneEnabled else { return }
         keyplane = .emoji
         rebuildKeyContainer()
-    }
-
-    private func dismissChromeKeyboard() {
-        controller?.dismissKeyboardFromChrome()
     }
 
     private func runTransform(mode: RewriteMode) {
@@ -1323,6 +1826,7 @@ final class KeyboardLayoutView: UIView {
 
         guard AppGroupStore.shared.isSessionValid() else {
             statusLabel.text = kbString("keyboard.open_host")
+            updateStatusRowVisibility()
             refreshOpenAppButtonVisibility()
             return
         }
@@ -1339,9 +1843,9 @@ final class KeyboardLayoutView: UIView {
             working = kbString("keyboard.working_expand")
         }
         statusLabel.text = working
+        updateStatusRowVisibility()
 
         let style = AppGroupStore.shared.conversationStyle
-        let previewFirst = AppGroupStore.shared.aiPreviewBeforeApply
 
         DispatchQueue.main.async { [weak self] in
             Task { @MainActor in
@@ -1370,10 +1874,12 @@ final class KeyboardLayoutView: UIView {
                 }
                 guard !text.isEmpty else {
                     self.statusLabel.text = self.kbString("keyboard.empty_text")
+                    self.updateStatusRowVisibility()
                     return
                 }
                 do {
                     let out = try await RewriteAPI.rewrite(text: text, mode: mode, style: style)
+                    let previewFirst = AppGroupStore.shared.aiPreviewBeforeApply
                     if previewFirst {
                         controller.setPendingApplySnapshot(snap)
                         self.showResultPanel(with: out)
@@ -1382,10 +1888,12 @@ final class KeyboardLayoutView: UIView {
                         controller.applyRewrite(result: out, snapshot: snap)
                         self.statusLabel.text = self.kbString("keyboard.done")
                     }
+                    self.updateStatusRowVisibility()
                     self.refreshOpenAppButtonVisibility()
                 } catch {
                     // Non-fatal recorded in `RewriteAPI.rewrite` for API/decode failures.
                     self.statusLabel.text = error.localizedDescription
+                    self.updateStatusRowVisibility()
                 }
             }
         }
@@ -1556,5 +2064,24 @@ private extension NSLayoutConstraint {
 private extension Bundle {
     static var keyboardBundle: Bundle {
         Bundle(for: KeyboardLayoutView.self)
+    }
+}
+
+extension KeyboardLayoutView: KeyboardChromeOptionsDelegate {
+    func chromeOptionsLocalize(_ key: String) -> String {
+        kbString(key)
+    }
+
+    func chromeOptionsDidChangeAppearance() {
+        controller?.applyKeyboardAppearancePreference()
+        syncSettingsFromAppGroup()
+    }
+
+    func chromeOptionsDidChangeAccent() {
+        syncSettingsFromAppGroup()
+    }
+
+    func chromeOptionsIsDark() -> Bool {
+        traitCollection.userInterfaceStyle == .dark
     }
 }

@@ -18,7 +18,8 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
-        HostSupabaseConfigSync.pushToAppGroupIfNeeded()
+        FirebaseBootstrap.prepareDevLaunchWithoutPlist()
+        KeyboardAppConfiguration.current.pushToAppGroupIfNeeded()
         AppGroupStore.shared.purgeLegacyKeyboardUIRegionIfPresent()
         FirebaseDeviceRegistry.configureAtLaunch()
 

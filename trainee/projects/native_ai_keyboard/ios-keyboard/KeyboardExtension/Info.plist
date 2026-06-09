@@ -6,6 +6,8 @@
 	<string>http://127.0.0.1:8787</string>
 	<key>AIKeyboardDevSessionBypass</key>
 	<true/>
+	<key>AIKeyboardMinimalKeyboard</key>
+	<false/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

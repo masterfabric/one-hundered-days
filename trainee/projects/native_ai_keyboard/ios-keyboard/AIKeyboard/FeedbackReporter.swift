@@ -42,19 +42,6 @@ enum IssueReportL10n {
             : "You already sent a report from this device today.\nYou can send another one tomorrow."
     }
 
-    /// Shown when `AIKeyboardIssueReportBypassDailyLimit` is true (dev only).
-    static var devBypassBanner1: String {
-        useTurkish
-            ? "Test: yerel günlük sınır kapalı (Info.plist)."
-            : "Test: local daily limit is off (Info.plist)."
-    }
-
-    static var devBypassBanner2: String {
-        useTurkish
-            ? "Sunucu hâlâ 429 verirse: `supabase secrets set ISSUE_REPORT_BYPASS_UTC_RATE_LIMIT=true` (yalnızca test)."
-            : "If the server still returns 429: `supabase secrets set ISSUE_REPORT_BYPASS_UTC_RATE_LIMIT=true` (testing only)."
-    }
-
     static var submit: String { useTurkish ? "Gönder" : "Send" }
     static var cancel: String { useTurkish ? "Vazgeç" : "Cancel" }
     static var sent: String {

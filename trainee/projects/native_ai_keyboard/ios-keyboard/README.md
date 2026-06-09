@@ -20,7 +20,7 @@ Open `AIKeyboard.xcodeproj`.
 Both targets only declare **App Groups** in their `.entitlements` files — nothing else (no Push, iCloud, Associated Domains, etc.). On [developer.apple.com](https://developer.apple.com/account/resources/identifiers/list) you only need:
 
 1. An **App Group** identifier: `group.com.nativeaikeyboard.shared`
-2. That group enabled on both App IDs: `com.nativeaikeyboard.host` and `com.nativeaikeyboard.host.keyboard`
+2. That group enabled on both App IDs: **`com.masterfabric.nativeaikeyboard`** (host) and **`com.masterfabric.nativeaikeyboard.keyboard`** (extension)
 
 You do **not** need to turn on random items under **App Services** or **Capability Requests** unless you add features later that require them.
 
@@ -87,7 +87,7 @@ The host app includes **Firebase Crashlytics**, **Google Analytics for Firebase*
 
 ### Setup
 
-1. Create a Firebase project → add an **iOS** app with bundle ID **`com.nativeaikeyboard.host`** (and optionally register the keyboard extension app ID for the same project if you use a second plist later).
+1. Create a Firebase project → add an **iOS** app with bundle ID **`com.masterfabric.nativeaikeyboard`** (and optionally register **`com.masterfabric.nativeaikeyboard.keyboard`** if you add a second plist for the extension).
 2. Download **`GoogleService-Info.plist`** and copy it to **`ios-keyboard/AIKeyboard/Resources/GoogleService-Info.plist`** (gitignored). See `ios-keyboard/GoogleService-Info.plist.example` for shape only — do not ship placeholder values.
 3. In Firebase console enable **Crashlytics**, **Analytics**, and create a **Firestore** database (production mode, then deploy rules — see below).
 4. **Authentication → Sign-in method → Anonymous:** set to **Enabled**. The host app calls `signInAnonymously()` before the first Firestore write so you can use `request.auth != null` rules without Apple Sign-In.
@@ -127,6 +127,15 @@ The **host** `Info.plist` key **`SupabaseProjectURL`** (project root URL, no `/f
 
 Users must enable **Allow Full Access** for the keyboard in iOS Settings so the extension can reach your API and the App Group.
 
+**The host app cannot read iOS Settings directly** (same limitation as [KeyboardKit’s Status module](https://github.com/KeyboardKit/KeyboardKit) — the keyboard extension must run and report `UIInputViewController.hasFullAccess` into the App Group). Flow:
+
+1. User enables **Allow Full Access** under Settings → General → Keyboard → Keyboards → AI Keyboard.
+2. User opens **AI Keyboard in Messages** (or any app) for a few seconds.
+3. Extension writes `keyboard_has_full_access` + `keyboard_access_report.json` to `group.com.nativeaikeyboard.shared`.
+4. Host app reads the report on **Refresh** or when returning to foreground (Darwin notify).
+
+If Settings shows Full Access on but the app still says off: open the keyboard again after changing Settings, tap **Refresh**, and check the extension log for `accessReport hasFullAccess=true`. If the log shows `appGroupWrite=false`, fix App Group signing on both targets.
+
 ## Local development
 
 **Important:** On the **iOS Simulator**, `http://127.0.0.1` is the simulator itself, not your Mac. The API on your Mac must use your **Mac’s LAN IP** (e.g. `http://192.168.1.3:8787`). Default dev port is **8787** (not 8080) so another app on 8080 does not steal requests. Use the **root** URL only — do **not** append `/v1`.
@@ -146,6 +155,47 @@ Optional: `MAC_IP=192.168.x.x ./scripts/run-ios-demo.sh` if `en0` is wrong. For 
 Both `Info.plist` files set `AIKeyboardDevSessionBypass` to **true** so the extension treats the session as valid and calls `/v1/rewrite` with `X-Device-Id` instead of a JWT. On the server, enable **`DEV_REWRITE_WITHOUT_JWT=true`** together with **`ENTITLEMENT_BYPASS=true`** in `server/.env`. Remove or set `AIKeyboardDevSessionBypass` to **false** before an App Store build.
 
 Run the host app **once** after install so it writes `api_base_url_override` to the App Group (the script passes `AIKEYBOARD_API_BASE` on launch) and refreshes the **session JWT** for the keyboard extension — unless you rely entirely on the dev bypass above.
+
+When **`SupabaseProjectURL`** is set, the host skips the legacy Node `POST /v1/session` call (`AccountSync` + `usesSupabaseTransform`), so simulator launches no longer spam `Connection refused` to `127.0.0.1:8787`.
+
+### Simulator console noise (expected in local dev)
+
+| Log | Harmless? | Notes |
+|-----|-----------|--------|
+| `empty dSYM file detected` | Yes | Debug build + optional Firebase script; does not affect the keyboard. |
+| `Connection refused` → `127.0.0.1:8787` | Yes (with Supabase) | Legacy session only; skipped when Supabase transform is configured. |
+| `Firebase app has not yet been configured` | Yes | No `GoogleService-Info.plist` in `AIKeyboard/Resources/` — Crashlytics/Analytics are intentionally disabled; `FirebaseBootstrap` lowers log verbosity in DEBUG. |
+
+These host-app messages do **not** explain a keyboard that opens and immediately closes. Debug that in the host app under **Keyboard setup → Refresh → Keyboard extension log** (App Group `keyboard_extension_log.txt`). The app interprets the log automatically (empty / crash during init / immediate dismiss / healthy).
+
+### DEBUG: minimal smoke keyboard
+
+Set **`AIKeyboardMinimalKeyboard`** to **`true`** in [`KeyboardExtension/Info.plist`](KeyboardExtension/Info.plist) to load a tiny UI (label + space key) instead of the full keyplane. If the smoke keyboard stays open but the full keyboard does not, the crash is inside `KeyboardLayoutView` deferred keyplane build. Set back to **`false`** before shipping.
+
+**Healthy smoke log** (copy from host app → Keyboard extension log):
+
+```
+controller.viewWillSetupKeyboardKit.begin
+infra.bundleId=com.masterfabric.nativeaikeyboard.keyboard
+infra.appGroup=group.com.nativeaikeyboard.shared container=true writeProbe=true
+controller.setupKeyboardKit.success
+controller.viewWillSetupKeyboardView.begin
+controller.contentView=KeyboardMinimalView
+KeyboardMinimalView init
+KeyboardMinimalView ready
+controller.viewDidAppear bounds=(…)
+```
+
+If smoke also dismisses immediately, suspect **extension infrastructure** (signing, debugger attach, watchdog) — not only keyplane layout.
+
+### Extension infrastructure debugging
+
+1. **Signing** — both targets → **Signing & Capabilities** → App Groups → `group.com.nativeaikeyboard.shared` must show green for **AIKeyboard** and **AIKeyboardKeyboard**.
+2. **Run without debugger** — Xcode → **Product → Perform Action → Run Without Debugging** (debugger attach can kill keyboard extensions early on simulator).
+3. **Console.app** — filter `AIKeyboardKeyboard` or `ReportCrash` on your Mac while switching to the keyboard; share the crash reason if the in-app log stops mid-chain.
+4. **In-app log** — first lines should include `infra.*` from `KeyboardExtensionSigningDiagnostics` and `controller.setupKeyboardKit.*` (KeyboardKit-style lifecycle). Full keyboard continues with `layoutEngine spec=lettersQwerty` → `keyplane row:` → `build step: deferred done`.
+
+The full keyboard loads in **two phases**: toolbar/status first (`init phase1`), then key rows after `viewDidAppear` (`build step: deferred`). Check the in-app extension log for which step last appears if the keyboard still dismisses.
 
 ## After deleting the app (clean install)
 

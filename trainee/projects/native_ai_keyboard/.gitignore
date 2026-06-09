@@ -12,4 +12,6 @@ supabase/.temp/
 **/xcuserdata/
 **/*.xcuserstate
 **/DerivedData/
+**/.derivedData/
+.derivedData/
 .DS_Store

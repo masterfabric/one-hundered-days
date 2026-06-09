@@ -2,7 +2,7 @@
 "keyboard.key_return" = "Geç";
 "keyboard.key_abc" = "ABC";
 "keyboard.settings_button_accessibility" = "Uygulama ayarları";
-"keyboard.open_url_need_full_access" = "Uygulama açılamadı. Ayarlar → Genel → Klavye → Klavyeler → AI Keyboard içinde “Tam Erişime İzin Ver”i açın.";
+"keyboard.open_url_need_full_access" = "Uygulama açılamadı. Ayarlarda AI Keyboard için Tam Erişime İzin Ver’i açın.";
 "keyboard.open_url_failed_general" = "Klavyeden uygulama açılamadı. Bir kez ana ekrandan AI Keyboard uygulamasını açıp dişliye yeniden dokunun.";
 "keyboard.theme_button_accessibility" = "Klavye teması: sistem, açık veya koyu";
 "keyboard.accent_cycle_accessibility" = "Vurgu rengi — değiştirmek için dokunun";
@@ -18,6 +18,17 @@
 "keyboard.action_shorten" = "Kısalt";
 "keyboard.action_expand" = "Genişlet";
 "keyboard.globe" = "Dünya";
+"keyboard.chrome_menu_title" = "Tema ve renk";
+"keyboard.chrome_more_accessibility" = "Ayarlar";
+"appearance.system" = "Sisteme uy";
+"appearance.light" = "Açık";
+"appearance.dark" = "Koyu";
+"accent.systemBlue" = "Sistem mavisi";
+"accent.teal" = "Turkuaz";
+"accent.green" = "Yeşil";
+"accent.orange" = "Turuncu";
+"accent.purple" = "Mor";
+"accent.pink" = "Pembe";
 "keyboard.style_row" = "Ton: %@";
 "keyboard.style_picker_title" = "Konuşma tonu";
 "keyboard.style_picker_message" = "İyileştir yalnızca yazım ve dilbilgisini düzeltir (ton uygulanmaz). Yeniden yaz, kısalt ve genişlet seçtiğin tona göre şekillenir.";

@@ -2,7 +2,7 @@
 "keyboard.key_return" = "return";
 "keyboard.key_abc" = "ABC";
 "keyboard.settings_button_accessibility" = "Open app settings";
-"keyboard.open_url_need_full_access" = "Couldn’t open the app. Turn on “Allow Full Access” for AI Keyboard: Settings → General → Keyboard → Keyboards → AI Keyboard.";
+"keyboard.open_url_need_full_access" = "Couldn’t open the app. Turn on Allow Full Access for AI Keyboard in Settings.";
 "keyboard.open_url_failed_general" = "Couldn’t open the app from the keyboard. Open AI Keyboard from the Home Screen once, then try the gear again.";
 "keyboard.theme_button_accessibility" = "Keyboard theme: system, light, or dark";
 "keyboard.accent_cycle_accessibility" = "Accent color — tap to change";
@@ -18,6 +18,17 @@
 "keyboard.action_shorten" = "Shorten";
 "keyboard.action_expand" = "Expand";
 "keyboard.globe" = "Globe";
+"keyboard.chrome_menu_title" = "Theme & accent";
+"keyboard.chrome_more_accessibility" = "Settings";
+"appearance.system" = "Match system";
+"appearance.light" = "Light";
+"appearance.dark" = "Dark";
+"accent.systemBlue" = "System blue";
+"accent.teal" = "Teal";
+"accent.green" = "Green";
+"accent.orange" = "Orange";
+"accent.purple" = "Purple";
+"accent.pink" = "Pink";
 "keyboard.style_row" = "Style: %@";
 "keyboard.style_picker_title" = "Conversation tone";
 "keyboard.style_picker_message" = "Improve only fixes spelling and grammar (tone is not applied). Rewrite, Shorten, and Expand follow your selected tone.";
