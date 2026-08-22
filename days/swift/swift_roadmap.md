@@ -1,8 +1,8 @@
-[![Swift](https://img.shields.io/badge/Swift-6.4-F05138?logo=swift&logoColor=white)](https://www.swift.org/) [![SwiftUI](https://img.shields.io/badge/SwiftUI-iOS%2026-0A84FF?logo=swift&logoColor=white)](https://developer.apple.com/xcode/swiftui/) [![Xcode](https://img.shields.io/badge/Xcode-27-1575F9?logo=xcode&logoColor=white)](https://developer.apple.com/xcode/)
+[![Swift](https://img.shields.io/badge/Swift-6.x-F05138?logo=swift&logoColor=white)](https://www.swift.org/) [![SwiftUI](https://img.shields.io/badge/SwiftUI-iOS%2026%2B-0A84FF?logo=swift&logoColor=white)](https://developer.apple.com/xcode/swiftui/) [![Xcode](https://img.shields.io/badge/Xcode-latest-1575F9?logo=xcode&logoColor=white)](https://developer.apple.com/xcode/)
 
 ### 🚀 Swift & SwiftUI Developer Roadmap: Day 1 to Day 100 (Foundational Skills to Professional Competence)
 
-> Built on the current Apple toolchain: **Swift 6.4**, **Xcode 27**, **iOS 26** (Liquid Glass), the **Observation** framework (`@Observable`), **Swift Concurrency** with strict data-race safety, **SwiftData**, and **Swift Testing**. Deprecated patterns (`NavigationView`, `ObservableObject`/`@Published` as the default, Combine-first async) are intentionally avoided in favor of their modern replacements.
+> Built on the latest stable Apple toolchain (current Xcode, current iOS SDK, Swift 6.x), featuring the **Observation** framework (`@Observable`), **Swift Concurrency** with strict data-race safety, **SwiftData**, and **Swift Testing**. Where a lesson relies on a version-specific capability, the minimum required version is stated in that day (e.g. typed throws on **Swift 6.0+**, Liquid Glass on **iOS 26+**). Deprecated patterns (`NavigationView`, `ObservableObject`/`@Published` as the default, Combine-first async) are intentionally avoided in favor of their modern replacements.
 
 | Day | Focus Area | Content Details | Goal (From Foundation to Professional) |
 | :---: | :--- | :--- | :--- |
