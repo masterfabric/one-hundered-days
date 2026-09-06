@@ -15,6 +15,7 @@ Quick overview of the available tracks. Open a roadmap for the full curriculum a
 | Track | Duration | Focus | Roadmap |
 |---|---:|---|---|
 | Flutter | 100 days | ![Dart](https://img.shields.io/badge/Dart-0175C2?logo=dart&logoColor=white) ![Flutter](https://img.shields.io/badge/Flutter-02569B?logo=flutter&logoColor=white) | [`/days/flutter/flutter_roadmap.md`](./days/flutter/flutter_roadmap.md) |
+| Swift & SwiftUI | 100 days | ![Swift](https://img.shields.io/badge/Swift-6.0%2B-F05138?logo=swift&logoColor=white) ![SwiftUI](https://img.shields.io/badge/SwiftUI-latest-0A84FF?logo=swift&logoColor=white) | [`/days/swift/swift_roadmap.md`](./days/swift/swift_roadmap.md) |
 | Expo / React Native | 100 days | ![Expo](https://img.shields.io/badge/Expo-000020?logo=expo&logoColor=white) ![React](https://img.shields.io/badge/React-61DAFB?logo=react&logoColor=000) | [`/days/expo/expo_roadmap.md`](./days/expo/expo_roadmap.md) |
 | DevOps | 100 days | ![Git](https://img.shields.io/badge/Git-F05032?logo=git&logoColor=white) | [`/days/devops/devops_roadmap.md`](./days/devops/devops_roadmap.md) |
 | NestJS | 100 days | ![Node.js](https://img.shields.io/badge/Node.js-339933?logo=nodedotjs&logoColor=white) ![NestJS](https://img.shields.io/badge/NestJS-E0234E?logo=nestjs&logoColor=white) | [`/days/nestjs/nestjs_roadmap.md`](./days/nestjs/nestjs_roadmap.md) |
@@ -160,7 +161,7 @@ This program is guided by our core values.
 
 - [`/interns/`](./interns/): Formal internship resources, onboarding templates, and workflow standards
 - [`/trainee/`](./trainee/): Open Trainee program (MasterFabric Academy) guides and projects
-- [`/days/`](./days/): Track roadmaps (Flutter, Expo, DevOps, NestJS, Next.js, Go, TypeScript, GraphQL, OOP, SDLC, Git, AI Agents)
+- [`/days/`](./days/): Track roadmaps (Flutter, Swift & SwiftUI, Expo, DevOps, NestJS, Next.js, Go, TypeScript, GraphQL, OOP, SDLC, Git, AI Agents)
 - [`/mcp/`](./mcp/): MasterFabric Academy MCP — interactive learning flow, mentor personas, and project planning
 
 ## Diagrams (Mermaid)
@@ -188,6 +189,7 @@ flowchart TB
   M --> M2[mentor personas + day skill]
 
   D --> F[flutter/flutter_roadmap.md]
+  D --> SW[swift/swift_roadmap.md]
   D --> E[expo/expo_roadmap.md]
   D --> V[devops/devops_roadmap.md]
   D --> N[nestjs/nestjs_roadmap.md]
